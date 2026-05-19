@@ -1,9 +1,10 @@
 #include "menu.h"
 #include "game_main.h"
-#include "../structures/InputManager.h"
+#include "../managers/InputManager.h"
+#include "../managers/AssetManager.h"
 #include "raylib.h"
 
-void runGame(GameState &currentState, InputManager &input, Font &myFont) {
+void runGame(GameState &currentState, InputManager &input) {
 
     static bool isPaused = false;
 ;
@@ -23,14 +24,11 @@ void runGame(GameState &currentState, InputManager &input, Font &myFont) {
         DrawText("--- SAMOTNA HRA ---", 280, 200, 30, WHITE);
         DrawText("Tady pobezi tvoje herni logika.", 250, 280, 20, LIGHTGRAY);
         
-        DrawTextEx(myFont, "Stiskni BACKSPACE pro navrat do menu", Vector2{210, 450}, 20.0f, 1.0f, MAROON);
-
         if (isPaused) {
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, 0.2f));
-            DrawTextEx(myFont, "PAUSED", Vector2{330, 270}, 40.0f, 1.0f, WHITE);
-            DrawTextEx(myFont, "Stiskni MEZERNIK pro pokracovani", Vector2{230, 330}, 20.0f, 1.0f, LIGHTGRAY);
-        } else {
-            DrawTextEx(myFont, "Stiskni MEZERNIK pro pauzu", Vector2{20, 20}, 20.0f, 1.0f, WHITE);
+            DrawTextEx(AssetManager::mainFont, "PAUZNUTO", Vector2{310, 270}, 40.0f, 1.0f, WHITE);
+            DrawTextEx(AssetManager::mainFont, "STISKNI MEZERNIK PRO POKRACOVANI", Vector2{170, 340}, 20.0f, 1.0f, LIGHTGRAY);
         }
+
     EndDrawing();
 }

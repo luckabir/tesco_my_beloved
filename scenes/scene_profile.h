@@ -3,6 +3,6 @@
 
 #include "../main.h"
 
-void runProfile(GameState &currentState, InputManager &input, Font &myFont);
+void runProfile(GameState &currentState, InputManager &input);
 
 #endif

@@ -1,10 +1,11 @@
 #include "../main.h"                   
-#include "../structures/InputManager.h" 
+#include "../managers/InputManager.h"
+#include "../managers/AssetManager.h" 
 #include "raylib.h"
 #include "menu.h"
 #include <cmath>
 
-void runMenu(GameState &currentState, InputManager &input, Font &myFont) {
+void runMenu(GameState &currentState, InputManager &input) {
     Rectangle startButton    = { 275, 200, 250, 45 };     
     Rectangle settingsButton = { 275, 255, 250, 45 };  
     Rectangle scoreButton    = { 275, 310, 250, 45 };
@@ -36,58 +37,52 @@ void runMenu(GameState &currentState, InputManager &input, Font &myFont) {
     BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        DrawBouncingTescoLogo(myFont, 230, 50, 100);
+        DrawBouncingTescoLogo(230, 50, 100);
 
-        if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, LIGHTGRAY);
+if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, LIGHTGRAY);
         else DrawRectangleRec(startButton, GRAY);
-        DrawText("START", startButton.x + 95, startButton.y + 12, 20, BLACK);
+        DrawTextEx(AssetManager::mainFont, "START", Vector2{startButton.x + 85, startButton.y + 14}, 14.0f, 1.0f, BLACK);
 
         if (CheckCollisionPointRec(mousePos, settingsButton)) DrawRectangleRec(settingsButton, LIGHTGRAY);
         else DrawRectangleRec(settingsButton, GRAY);
-        DrawText("NASTAVENI", settingsButton.x + 75, settingsButton.y + 12, 20, BLACK);
+        DrawTextEx(AssetManager::mainFont, "NASTAVENI", Vector2{settingsButton.x + 60, settingsButton.y + 14}, 14.0f, 1.0f, BLACK);
 
         if (CheckCollisionPointRec(mousePos, scoreButton)) DrawRectangleRec(scoreButton, LIGHTGRAY);
         else DrawRectangleRec(scoreButton, GRAY);
-        DrawText("ZEBRICEK", scoreButton.x + 80, scoreButton.y + 12, 20, BLACK);
+        DrawTextEx(AssetManager::mainFont, "ZEBRICEK", Vector2{scoreButton.x + 65, scoreButton.y + 14}, 14.0f, 1.0f, BLACK);
 
         if (CheckCollisionPointRec(mousePos, profileButton)) DrawRectangleRec(profileButton, LIGHTGRAY);
         else DrawRectangleRec(profileButton, GRAY);
-        DrawText("PROFIL", profileButton.x + 90, profileButton.y + 12, 20, BLACK);
+        DrawTextEx(AssetManager::mainFont, "PROFIL", Vector2{profileButton.x + 80, profileButton.y + 14}, 14.0f, 1.0f, BLACK);
 
         if (CheckCollisionPointRec(mousePos, savesButton)) DrawRectangleRec(savesButton, LIGHTGRAY);
         else DrawRectangleRec(savesButton, GRAY);
-        DrawText("ULOZENE POZICE", savesButton.x + 50, savesButton.y + 12, 20, BLACK);
+        DrawTextEx(AssetManager::mainFont, "ULOZENE POZICE", Vector2{savesButton.x + 25, savesButton.y + 14}, 14.0f, 1.0f, BLACK);
 
-        if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleRec(exitButton, RED); // Ukončit dáme červeně, když na něj najedeš
+        if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleRec(exitButton, RED); 
         else DrawRectangleRec(exitButton, DARKGRAY);
-        DrawText("UKONCIT HRU", exitButton.x + 65, exitButton.y + 12, 20, WHITE);
-
-    EndDrawing();
+        DrawTextEx(AssetManager::mainFont, "UKONCIT HRU", Vector2{exitButton.x + 45, exitButton.y + 14}, 14.0f, 1.0f, WHITE);
+    
+        EndDrawing();
 }
 
 
-
-// Funkce, která vykreslí skákající Tesco logo s podtržením <3
-void DrawBouncingTescoLogo(Font &myFont, int startX, int startY, int logoSize) {
+void DrawBouncingTescoLogo(int startX, int startY, int logoSize) {
     // --- NASTAVENÍ BOUNCE EFEKTU ---
-    // GetTime() vrací čas v sekundách od spuštění hry.
-    // Násobení u času (např. 3.0f) určuje RYCHLOST skákání.
-    // Násobení celého sinu (např. 6.0f) určuje VÝŠKU skoku (jak moc to skáče nahoru/dolu).
     float bounceOffset = sinf(GetTime() * 3.0f) * 6.0f; 
 
     // Připočteme bounceOffset k původní Y pozici
     float currentY = (float)startY + bounceOffset;
 
-    // 1. Vykreslení textu TESCO (Červeně)
-    DrawTextEx(myFont, "TESCO", Vector2{(float)startX, currentY}, (float)logoSize, 2.0f, RED);
+    // Vykreslení textu TESCO přes globální AssetManager::mainFont (Červeně)
+    DrawTextEx(AssetManager::mainFont, "TESCO", Vector2{(float)startX, currentY}, (float)logoSize, 2.0f, RED);
                 
-    // 2. Vykreslení rozkouskovaného podtržení (Modře)
+    // Vykreslení rozkouskovaného podtržení (Modře)
     float menuLetterWidth = logoSize * 0.75f;  
     float menuDashWidth = menuLetterWidth * 0.7f; 
     float menuDashHeight = logoSize * 0.15f;  
 
     for (int i = 0; i < 5; i++) {
-        // Čárky se posouvají na Y společně s textem, protože berou "currentY"
         int menuDashX = startX + (i * menuLetterWidth) + (menuLetterWidth - menuDashWidth) / 2 - 20;
         int menuDashY = (int)currentY + logoSize + 2;
         

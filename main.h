@@ -16,12 +16,12 @@ enum GameState {
     STATE_EXIT,
 };
 
-void runIntro(GameState &currentState, InputManager &input, Font &myFont);
-void runMenu(GameState &currentState, InputManager &input, Font &myFont);
-void runGame(GameState &currentState, InputManager &input, Font &myFont);
-void runSettings(GameState &currentState, InputManager &input, Font &myFont);
-void runScore(GameState &currentState, InputManager &input, Font &myFont);
-void runProfile(GameState &currentState, InputManager &input, Font &myFont);
-void runSaves(GameState &currentState, InputManager &input, Font &myFont);
+void runIntro(GameState &currentState, InputManager &input);
+void runMenu(GameState &currentState, InputManager &input);
+void runGame(GameState &currentState, InputManager &input);
+void runSettings(GameState &currentState, InputManager &input);
+void runScore(GameState &currentState, InputManager &input);
+void runProfile(GameState &currentState, InputManager &input);
+void runSaves(GameState &currentState, InputManager &input);
 
 #endif

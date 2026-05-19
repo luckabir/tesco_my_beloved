@@ -17,3 +17,4 @@ void InputManager::Update() {
     actionBack      = IsKeyPressed(keyBack) || IsKeyPressed(KEY_ESCAPE);
     actionPause     = IsKeyPressed(keyPause);
 }
+

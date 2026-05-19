@@ -3,7 +3,7 @@
 
 #include "../main.h"
 
-void runSaves(GameState &currentState, InputManager &input, Font &myFont);
+void runSaves(GameState &currentState, InputManager &input);
 
 
 #endif

@@ -1,8 +1,9 @@
 #include "../main.h"
-#include "../structures/InputManager.h"
+#include "../managers/InputManager.h"
+#include "../managers/AssetManager.h" 
 #include "raylib.h"
 
-void runScore(GameState &currentState, InputManager &input, Font &myFont) {
+void runScore(GameState &currentState, InputManager &input) {
     if (input.IsBackTriggered()) {
         currentState = STATE_MENU;
     }

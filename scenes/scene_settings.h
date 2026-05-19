@@ -3,6 +3,6 @@
 
 #include "../main.h"
 
-void runSettings(GameState &currentState, InputManager &input, Font &myFont);
+void runSettings(GameState &currentState, InputManager &input);
 
 #endif

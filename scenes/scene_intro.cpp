@@ -1,11 +1,12 @@
 #include "../main.h"
-#include "../structures/InputManager.h"
+#include "../managers/InputManager.h"
+#include "../managers/AssetManager.h" 
 #include "raylib.h"
 #include <thread>
 
-void runIntro(GameState &currentState, InputManager &input, Font &myFont) {
+void runIntro(GameState &currentState, InputManager &input) {
     // Statické proměnné pro řízení fází animace
-    static int phase = 0;             // 0 = objevování loga, 1 = zatmění do černé, 2 = roztmívání menu
+    static int phase = 0;             // 0 = objevování loga, 1 = zatmění do čarene, 2 = roztmívání menu
     static float logoAlpha = 0.0f;    // Průhlednost loga (0.0 až 1.0)
     static float blackAlpha = 0.0f;   // Průhlednost černé opony pro přechod
     static float shakeOffset = 0.0f;  // Efekt otřesu při "dopadu"
@@ -48,8 +49,8 @@ void runIntro(GameState &currentState, InputManager &input, Font &myFont) {
             ClearBackground(RAYWHITE);
             int logoX = 312; int logoY = 110; int logoSize = 35;
             
-            // Malé logo v menu pomocí Daydream fontu
-            DrawTextEx(myFont, "TESCO", Vector2{(float)logoX, (float)logoY}, (float)logoSize, 2.0f, BLUE);
+            // Malé logo v menu pomocí Daydream fontu (OPRAVENO NA ASSETMANAGER)
+            DrawTextEx(AssetManager::mainFont, "TESCO", Vector2{(float)logoX, (float)logoY}, (float)logoSize, 2.0f, BLUE);
             
             // BEZPEČNÉ PODTRŽENÍ: Kreslení malých červených obdélníčků pod písmena v menu (velikost 35)
             // Protože Daydream je pixelový font, zvětšili jsme šířku písmene na 0.75f, aby čárky seděly pod blocky
@@ -74,8 +75,8 @@ void runIntro(GameState &currentState, InputManager &input, Font &myFont) {
             int currentY = 220 + (int)shakeOffset;
             int logoX = 260;
             
-            // Velké modré logo TESCO
-            DrawTextEx(myFont, "TESCO", Vector2{(float)logoX, (float)currentY}, 80.0f, 2.0f, ColorAlpha(RED, logoAlpha));
+            // Velké modré logo TESCO (OPRAVENO NA ASSETMANAGER)
+            DrawTextEx(AssetManager::mainFont, "TESCO", Vector2{(float)logoX, (float)currentY}, 80.0f, 2.0f, ColorAlpha(RED, logoAlpha));
             
             // BEZPEČNÉ PODTRŽENÍ: Kreslení velkých červených obdélníčků (velikost 80) s respektem k průhlednosti animace
             float letterWidth = 80 * 0.75f;  
@@ -93,8 +94,8 @@ void runIntro(GameState &currentState, InputManager &input, Font &myFont) {
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, blackAlpha));
         }
 
-        // Nápověda dole (bez diakritiky, ať ji tvůj font bez problému schroustne!)
-        DrawTextEx(myFont, "STISKNI MEZERNIK PRO PRESKOCENI", Vector2{200, 560}, 16.0f, 1.0f, GRAY);
+        // Nápověda dole (bez diakritiky, ať ji tvůj font bez problému schroustne!) (OPRAVENO NA ASSETMANAGER)
+        DrawTextEx(AssetManager::mainFont, "STISKNI MEZERNIK PRO PRESKOCENI", Vector2{200, 560}, 16.0f, 1.0f, GRAY);
 
     EndDrawing();
 }

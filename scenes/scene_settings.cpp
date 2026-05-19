@@ -1,10 +1,11 @@
 #include "menu.h"
 #include "scene_settings.h"
-#include "../structures/InputManager.h"
+#include "../managers/InputManager.h"
+#include "../managers/AssetManager.h" 
 #include "raylib.h"
 
 
-void runSettings(GameState &currentState, InputManager &input, Font &myFont) {
+void runSettings(GameState &currentState, InputManager &input) {
 
     if (input.IsBackTriggered()) {
         currentState = STATE_MENU;

@@ -3,7 +3,7 @@
 
 #include "../main.h"
 
-void runScore(GameState &currentState, InputManager &input, Font &myFont);
+void runScore(GameState &currentState, InputManager &input);
 
 
 #endif

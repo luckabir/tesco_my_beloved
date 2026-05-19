@@ -1,5 +1,6 @@
 #include "main.h"
-#include "structures/InputManager.h"
+#include "managers/InputManager.h"
+#include "managers/AssetManager.h"
 #include <string.h>
 
 int main() {
@@ -13,8 +14,11 @@ int main() {
     
     InitWindow(screenWidth, screenHeight, title);
     SetTargetFPS(targetFPS);
+    InitAudioDevice();
 
-    Font myFont = LoadFontEx("ASSets/fonts/Daydream.otf", 64, NULL, 0);
+    AssetManager::LoadAll();
+    PlayMusicStream(AssetManager::bgMusic);
+    SetMusicVolume(AssetManager::bgMusic, 0.5f);
 
 
     while (!WindowShouldClose() && currentState != STATE_EXIT) {
@@ -51,31 +55,33 @@ int main() {
 
         switch (currentState) {
             case STATE_INTRO:
-                runIntro(currentState, input, myFont);
+                runIntro(currentState, input);
                 break;
             case STATE_MENU:
-                runMenu(currentState, input, myFont);
+                runMenu(currentState, input);
                 break;
             case STATE_PLAYING:
-                runGame(currentState, input, myFont);
+                runGame(currentState, input);
                 break;
             case STATE_SETTINGS:
-                runSettings(currentState, input, myFont);
+                runSettings(currentState, input);
                 break;
             case STATE_SAVES:
-                runSaves(currentState, input, myFont);
+                runSaves(currentState, input);
                 break;
             case STATE_PROFILE:
-                runProfile(currentState, input, myFont);
+                runProfile(currentState, input);
                 break;
             case STATE_SCORE:
-                runScore(currentState, input, myFont);
+                runScore(currentState, input);
                 break;
             default:
                 break;
         }
     }
 
+    AssetManager::UnloadAll();
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
