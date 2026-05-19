@@ -39,29 +39,29 @@ void runMenu(GameState &currentState, InputManager &input) {
 
         DrawBouncingTescoLogo(230, 50, 100);
 
-if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, LIGHTGRAY);
+if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, BLUE);
         else DrawRectangleRec(startButton, GRAY);
-        DrawTextEx(AssetManager::mainFont, "START", Vector2{startButton.x + 85, startButton.y + 14}, 14.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, "START", Vector2{startButton.x + 100, startButton.y + 14}, 14.0f, 1.0f, WHITE);
 
-        if (CheckCollisionPointRec(mousePos, settingsButton)) DrawRectangleRec(settingsButton, LIGHTGRAY);
+        if (CheckCollisionPointRec(mousePos, settingsButton)) DrawRectangleRec(settingsButton, BLUE);
         else DrawRectangleRec(settingsButton, GRAY);
-        DrawTextEx(AssetManager::mainFont, "NASTAVENI", Vector2{settingsButton.x + 60, settingsButton.y + 14}, 14.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, "NASTAVENI", Vector2{settingsButton.x + 85, settingsButton.y + 14}, 14.0f, 1.0f, WHITE);
 
-        if (CheckCollisionPointRec(mousePos, scoreButton)) DrawRectangleRec(scoreButton, LIGHTGRAY);
+        if (CheckCollisionPointRec(mousePos, scoreButton)) DrawRectangleRec(scoreButton, BLUE);
         else DrawRectangleRec(scoreButton, GRAY);
-        DrawTextEx(AssetManager::mainFont, "ZEBRICEK", Vector2{scoreButton.x + 65, scoreButton.y + 14}, 14.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, "ZEBRICEK", Vector2{scoreButton.x + 95, scoreButton.y + 14}, 14.0f, 1.0f, WHITE);
 
-        if (CheckCollisionPointRec(mousePos, profileButton)) DrawRectangleRec(profileButton, LIGHTGRAY);
+        if (CheckCollisionPointRec(mousePos, profileButton)) DrawRectangleRec(profileButton, BLUE);
         else DrawRectangleRec(profileButton, GRAY);
-        DrawTextEx(AssetManager::mainFont, "PROFIL", Vector2{profileButton.x + 80, profileButton.y + 14}, 14.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, "PROFIL", Vector2{profileButton.x + 100, profileButton.y + 14}, 14.0f, 1.0f, WHITE);
 
-        if (CheckCollisionPointRec(mousePos, savesButton)) DrawRectangleRec(savesButton, LIGHTGRAY);
+        if (CheckCollisionPointRec(mousePos, savesButton)) DrawRectangleRec(savesButton, BLUE);
         else DrawRectangleRec(savesButton, GRAY);
-        DrawTextEx(AssetManager::mainFont, "ULOZENE POZICE", Vector2{savesButton.x + 25, savesButton.y + 14}, 14.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, "ULOZENE POZICE", Vector2{savesButton.x + 60, savesButton.y + 14}, 14.0f, 1.0f, WHITE);
 
         if (CheckCollisionPointRec(mousePos, exitButton)) DrawRectangleRec(exitButton, RED); 
         else DrawRectangleRec(exitButton, DARKGRAY);
-        DrawTextEx(AssetManager::mainFont, "UKONCIT HRU", Vector2{exitButton.x + 45, exitButton.y + 14}, 14.0f, 1.0f, WHITE);
+        DrawTextEx(AssetManager::mainFont, "UKONCIT HRU", Vector2{exitButton.x + 75, exitButton.y + 14}, 14.0f, 1.0f, WHITE);
     
         EndDrawing();
 }
