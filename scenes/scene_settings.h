@@ -1,8 +1,10 @@
 #ifndef SCENE_SETTINGS_H
 #define SCENE_SETTINGS_H
 
-#include "../main.h"
+#include "menu.h"
 
-void runSettings(GameState &currentState, InputManager &input);
+class InputManager;
+
+void runSettings(GameState& currentState, InputManager& input);
 
 #endif

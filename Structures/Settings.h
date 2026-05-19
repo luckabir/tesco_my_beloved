@@ -1,5 +1,11 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
+struct Settings {
+    float volume;
+    bool fullscreen;
+};
 
-#endif
+extern Settings gameSettings;
+
+void SaveSettings();
+void LoadSettings();

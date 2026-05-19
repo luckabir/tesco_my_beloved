@@ -8,8 +8,6 @@ void runScore(GameState &currentState, InputManager &input) {
         currentState = STATE_MENU;
     }
 
-    BeginDrawing();
         ClearBackground(PURPLE); 
         DrawText("ZEBŘÍČEK NEJLEPŠÍCH", 250, 200, 30, WHITE);
-    EndDrawing();
 }

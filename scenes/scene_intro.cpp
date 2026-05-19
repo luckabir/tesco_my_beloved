@@ -2,7 +2,6 @@
 #include "../managers/InputManager.h"
 #include "../managers/AssetManager.h" 
 #include "raylib.h"
-#include <thread>
 
 void runIntro(GameState &currentState, InputManager &input) {
     // Statické proměnné pro řízení fází animace
@@ -27,22 +26,27 @@ void runIntro(GameState &currentState, InputManager &input) {
             phase = 1;           // Jdeme na zatmění
         }
     }
-    else if (phase == 1) {
+   else if (phase == 1) {
         // FÁZE 1: Pomalu se stmívá do černé (Fade Out)
-        if (shakeOffset > 0) shakeOffset -= 0.5f; // Tlumení otřesu
+        if (shakeOffset > 0) shakeOffset -= 0.5f; 
         
-        blackAlpha += 0.02f; // Rychlost stmívání (pomalé)
+        blackAlpha += 0.02f; 
         if (blackAlpha >= 1.0f) {
             blackAlpha = 1.0f;
-            phase = 2; // Obrazovka je úplně černá, logo zmizelo, jdeme roztmívat menu!
+            
+            static float blackScreenTimer = 0.0f;
+            blackScreenTimer += GetFrameTime(); // Přičítá čas v sekundách od posledního snímku
+            
+            if (blackScreenTimer >= 1.0f) { // Až přejde 1 sekunda...
+                phase = 2; 
+                currentState = STATE_MENU; 
+                blackScreenTimer = 0.0f; // Reset časovače pro příště
+            }
         }
-         currentState = STATE_MENU; // Opona zmizela, předáváme žezlo čistému menu
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Pauza před přechodem na menu
     }
 
 
     // --- VYKRESLOVÁNÍ INTRA ---
-    BeginDrawing();
         
         // Pokud jsme ve fázi 2, vykreslíme na pozadí už samotné menu, aby se pod oponou plynule objevilo!
         if (phase == 2) {
@@ -97,5 +101,4 @@ void runIntro(GameState &currentState, InputManager &input) {
         // Nápověda dole (bez diakritiky, ať ji tvůj font bez problému schroustne!) (OPRAVENO NA ASSETMANAGER)
         DrawTextEx(AssetManager::mainFont, "STISKNI MEZERNIK PRO PRESKOCENI", Vector2{200, 560}, 16.0f, 1.0f, GRAY);
 
-    EndDrawing();
 }

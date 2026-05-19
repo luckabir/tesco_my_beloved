@@ -18,7 +18,6 @@ void runGame(GameState &currentState, InputManager &input) {
         isPaused = !isPaused;
     }
 
-    BeginDrawing();
         ClearBackground(BLUE); 
 
         DrawText("--- SAMOTNA HRA ---", 280, 200, 30, WHITE);
@@ -30,5 +29,4 @@ void runGame(GameState &currentState, InputManager &input) {
             DrawTextEx(AssetManager::mainFont, "STISKNI MEZERNIK PRO POKRACOVANI", Vector2{170, 340}, 20.0f, 1.0f, LIGHTGRAY);
         }
 
-    EndDrawing();
 }

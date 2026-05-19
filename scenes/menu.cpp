@@ -13,8 +13,8 @@ void runMenu(GameState &currentState, InputManager &input) {
     Rectangle savesButton    = { 275, 420, 250, 45 };
     Rectangle exitButton     = { 275, 475, 250, 45 };
 
-    Vector2 mousePos = GetMousePosition();
-
+    Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), Camera2D{ Vector2{0,0}, Vector2{0,0}, 0.0f, fminf((float)GetScreenWidth()/800.0f, (float)GetScreenHeight()/600.0f) });
+    
     if (CheckCollisionPointRec(mousePos, startButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         currentState = STATE_PLAYING; 
     }
@@ -34,12 +34,11 @@ void runMenu(GameState &currentState, InputManager &input) {
         currentState = STATE_EXIT; 
     }
 
-    BeginDrawing();
         ClearBackground(RAYWHITE);
 
         DrawBouncingTescoLogo(230, 50, 100);
 
-if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, BLUE);
+        if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, BLUE);
         else DrawRectangleRec(startButton, GRAY);
         DrawTextEx(AssetManager::mainFont, "START", Vector2{startButton.x + 100, startButton.y + 14}, 14.0f, 1.0f, WHITE);
 
@@ -63,7 +62,6 @@ if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton,
         else DrawRectangleRec(exitButton, DARKGRAY);
         DrawTextEx(AssetManager::mainFont, "UKONCIT HRU", Vector2{exitButton.x + 75, exitButton.y + 14}, 14.0f, 1.0f, WHITE);
     
-        EndDrawing();
 }
 
 

@@ -8,8 +8,6 @@ void runSaves(GameState &currentState, InputManager &input) {
         currentState = STATE_MENU;
     }
 
-    BeginDrawing();
         ClearBackground(PURPLE); 
         DrawText("ULOŽENÉ HRY", 250, 200, 30, WHITE);
-    EndDrawing();
 }
