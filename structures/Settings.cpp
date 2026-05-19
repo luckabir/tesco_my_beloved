@@ -11,6 +11,7 @@ void SaveSettings()
     {
         file << gameSettings.volume << std::endl;
         file << gameSettings.fullscreen << std::endl;
+        file.close();
     }
 }
 
@@ -22,10 +23,12 @@ void LoadSettings()
     {
         file >> gameSettings.volume;
         file >> gameSettings.fullscreen;
+        file.close();
     }
     else
     {
         gameSettings.volume = 0.5f;
         gameSettings.fullscreen = false;
+        SaveSettings();
     }
 }

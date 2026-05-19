@@ -1,6 +1,7 @@
 #include "main.h"
 #include "managers/InputManager.h"
 #include "managers/AssetManager.h"
+#include "structures/Settings.h"
 #include <string.h>
 #include <cmath>
 
@@ -17,10 +18,14 @@ int main() {
     InitWindow(virtualWidth, virtualHeight, title);
     SetTargetFPS(targetFPS);
     InitAudioDevice();
-
+    LoadSettings();
     AssetManager::LoadAll();
     PlayMusicStream(AssetManager::bgMusic);
-    SetMusicVolume(AssetManager::bgMusic, 0.5f);
+    SetMusicVolume(AssetManager::bgMusic, gameSettings.volume);
+
+    if (gameSettings.fullscreen) {
+        ToggleFullscreen(); // <--- OPRAVA FULLSCREENU PO STARTU
+    }
 
     RenderTexture2D target = LoadRenderTexture(virtualWidth, virtualHeight);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
