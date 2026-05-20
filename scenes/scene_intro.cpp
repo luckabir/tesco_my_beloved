@@ -98,7 +98,4 @@ void runIntro(GameState &currentState, InputManager &input) {
             DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), ColorAlpha(BLACK, blackAlpha));
         }
 
-        // Nápověda dole (bez diakritiky, ať ji tvůj font bez problému schroustne!) (OPRAVENO NA ASSETMANAGER)
-        DrawTextEx(AssetManager::mainFont, "STISKNI MEZERNIK PRO PRESKOCENI", Vector2{200, 560}, 16.0f, 1.0f, GRAY);
-
 }

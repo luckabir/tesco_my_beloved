@@ -2,6 +2,7 @@
 #include "managers/InputManager.h"
 #include "managers/AssetManager.h"
 #include "structures/Settings.h"
+#include "structures/Profile.h"
 #include <string.h>
 #include <cmath>
 
@@ -19,12 +20,13 @@ int main() {
     SetTargetFPS(targetFPS);
     InitAudioDevice();
     LoadSettings();
+    LoadProfilesList();
     AssetManager::LoadAll();
     PlayMusicStream(AssetManager::bgMusic);
     SetMusicVolume(AssetManager::bgMusic, gameSettings.volume);
 
     if (gameSettings.fullscreen) {
-        ToggleFullscreen(); // <--- OPRAVA FULLSCREENU PO STARTU
+        ToggleFullscreen(); 
     }
 
     RenderTexture2D target = LoadRenderTexture(virtualWidth, virtualHeight);
@@ -44,7 +46,13 @@ int main() {
                     strcpy(title, "JDEME NA BRIGADKU UWU");
                     break;
                 case STATE_PLAYING:
-                    strcpy(title, "BOLEST ZACINA");
+                    if (isUserLoggedIn) {
+                        runGame(currentState, input);
+                        strcpy(title, "BOLEST ZACINA");
+                    } else {
+                        currentState = STATE_PROFILE;
+                        strcpy(title, "NO MOMENT");
+                    }
                     break;
                 case STATE_SETTINGS:
                     strcpy(title, "TADY JE SNAD NECO SPATNE OTAZNIK");
@@ -92,6 +100,8 @@ int main() {
         }
         EndTextureMode();
 
+     
+
         BeginDrawing();
             ClearBackground(BLACK); 
 
@@ -110,6 +120,24 @@ int main() {
                 0.0f,
                 WHITE
             );
+
+            std::string statusText;
+
+            if (currentState != STATE_INTRO){
+                if (isUserLoggedIn){
+                    statusText = activeProfile.nickname;
+                }else{
+                    statusText = "Neprihlasen";
+                }
+            }
+            
+
+            Vector2 textSize = MeasureTextEx(AssetManager::mainFont, statusText.c_str(), 4.0f, 1.0f);
+            float textX = GetScreenWidth() - textSize.x - 100.0f;
+            float textY = 20.0f;
+            DrawTextEx(AssetManager::mainFont,statusText.c_str(),Vector2{ textX, textY },14.0f,1.0f,BLUE);
+
+
         EndDrawing();
     }
 
