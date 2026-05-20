@@ -17,8 +17,8 @@ enum GameState {
 };
 
 void runIntro(GameState &currentState, InputManager &input);
-void runMenu(GameState &currentState, InputManager &input);
-void runGame(GameState &currentState, InputManager &input);
+void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused);
+void runGame(GameState &currentState, InputManager &input, bool& isGamePaused);
 void runSettings(GameState &currentState, InputManager &input);
 void runScore(GameState &currentState, InputManager &input);
 void runProfile(GameState &currentState, InputManager &input);

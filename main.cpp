@@ -116,10 +116,10 @@ int main() {
                 runIntro(currentState, input);
                 break;
             case STATE_MENU:
-                runMenu(currentState, input);
+                runMenu(currentState, input, isGamePaused);
                 break;
             case STATE_PLAYING:
-                runGame(currentState, input);
+                runGame(currentState, input, isGamePaused);
                 break;
             case STATE_SETTINGS:
                 runSettings(currentState, input);

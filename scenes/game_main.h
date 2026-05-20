@@ -3,6 +3,6 @@
 
 #include "../main.h"
 
-void runGame(GameState &currentState, InputManager &input);
+void runGame(GameState &currentState, InputManager &input, bool& isGamePaused);
 
 #endif

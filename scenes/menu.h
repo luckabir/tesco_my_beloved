@@ -3,7 +3,9 @@
 
 #include "../main.h"
 
-void runMenu(GameState &currentState, InputManager &input);
+
+bool HasSaveGame();
+void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused);
 void DrawBouncingTescoLogo(int startX, int startY, int logoSize);
 
 #endif
