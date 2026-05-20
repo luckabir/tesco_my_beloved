@@ -73,7 +73,7 @@ void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused) {
     ClearBackground(RAYWHITE);
 
     // Skákající TESCO logo (startY posunuto na 30, ať netlačí na tlačítka)
-    DrawBouncingTescoLogo(230, 30, 90);
+    DrawBouncingTescoLogo(250, 30, 90);
 
     // 1. START / NOVÁ BRIGÁDA
     if (CheckCollisionPointRec(mousePos, startButton)) DrawRectangleRec(startButton, BLUE);
