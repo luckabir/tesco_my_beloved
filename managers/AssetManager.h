@@ -7,7 +7,8 @@ class AssetManager {
 public:
 
     static Font mainFont;
-    static Music bgMusic;
+    static Music menuMusic;
+    static Music gameMusic;
 
     static void LoadAll();
     static void UnloadAll();

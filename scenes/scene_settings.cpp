@@ -53,7 +53,7 @@ void runSettings(GameState& currentState, InputManager& input)
         if (volume > 1.0f) volume = 1.0f;
 
         // Měníme hlasitost v reálném čase v paměti
-        SetMusicVolume(AssetManager::bgMusic, volume);
+        SetMasterVolume(volume);
         
         // !!! ODSTRANĚNO: SaveSettings() – už netrápíme disk při každém pohnutí myši
     }
