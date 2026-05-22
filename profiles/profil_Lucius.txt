@@ -1,4 +1,4 @@
-../ASSets/profile/default_avatar.png
+ASSets/profile/default_avatar.png
 Lucius
 0
 6383

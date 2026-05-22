@@ -47,7 +47,7 @@ void CreateProfile(const std::string& profileName, int pin)
     activeProfile.maxScore = 0;
     activeProfile.shiftsCompleted = 0;
     activeProfile.customersServed = 0;
-    activeProfile.profilePicturePath = "../ASSets/profile/default_avatar.png"; 
+    activeProfile.profilePicturePath = "ASSets/profile/default_avatar.png"; 
     activeProfile.rank = PlayerRank::NOVACEK;
     activeProfile.save_id = 0;
 
