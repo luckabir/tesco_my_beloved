@@ -47,13 +47,11 @@ void runIntro(GameState &currentState, InputManager &input) {
 
 
     // --- VYKRESLOVÁNÍ INTRA ---
-        
         // Pokud jsme ve fázi 2, vykreslíme na pozadí už samotné menu, aby se pod oponou plynule objevilo!
         if (phase == 2) {
             ClearBackground(RAYWHITE);
             int logoX = 312; int logoY = 110; int logoSize = 35;
             
-            // Malé logo v menu pomocí Daydream fontu (OPRAVENO NA ASSETMANAGER)
             DrawTextEx(AssetManager::mainFont, "TESCO", Vector2{(float)logoX, (float)logoY}, (float)logoSize, 2.0f, BLUE);
             
             // BEZPEČNÉ PODTRŽENÍ: Kreslení malých červených obdélníčků pod písmena v menu (velikost 35)

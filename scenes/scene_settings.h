@@ -3,7 +3,6 @@
 
 #include "../main.h"
 
-
 class InputManager;
 
 void runSettings(GameState& currentState, InputManager& input);

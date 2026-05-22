@@ -133,15 +133,16 @@ int main() {
                 break;
         }
 
-        if (currentState != STATE_INTRO) {
-            std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
-            Color textColor = isUserLoggedIn ? GREEN : RED;
-
-            Vector2 textSize = MeasureTextEx(AssetManager::mainFont, statusText.c_str(), 14.0f, 1.0f);
-            float textX = (float)virtualWidth - textSize.x - 20.0f;
-            float textY = 20.0f;
-            
-            DrawTextEx(AssetManager::mainFont, statusText.c_str(), Vector2{ textX, textY }, 14.0f, 1.0f, textColor);
+        if (currentState != STATE_INTRO && currentState != STATE_EXIT) {
+            extern bool videoPlaying; 
+            if (!videoPlaying) {
+                std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
+                Color textColor = isUserLoggedIn ? GREEN : RED;
+                Vector2 textSize = MeasureTextEx(AssetManager::mainFont, statusText.c_str(), 14.0f, 1.0f);
+                float textX = (float)virtualWidth - textSize.x - 20.0f;
+                float textY = 20.0f;
+                DrawTextEx(AssetManager::mainFont, statusText.c_str(), Vector2{ textX, textY }, 14.0f, 1.0f, textColor);
+            }
         }
 
         EndTextureMode();

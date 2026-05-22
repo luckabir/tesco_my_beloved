@@ -5,5 +5,4 @@
 
 void runSaves(GameState &currentState, InputManager &input);
 
-
 #endif

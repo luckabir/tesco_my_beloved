@@ -5,5 +5,4 @@
 
 void runScore(GameState &currentState, InputManager &input);
 
-
 #endif

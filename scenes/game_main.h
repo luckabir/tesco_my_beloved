@@ -5,11 +5,11 @@
 #include "../managers/InputManager.h"
 
 struct ShiftData {
-    int currentDay = 1;       // Aktuální den na brigádě
-    int moneyEarned = 0;      // Peníze utržené v daném dni
-    int itemsScanned = 0;     // Počet naskenovaných položek
-    int mistakesMade = 0;     // Počet chyb
-    bool wasFired = false;    // Pokud hráč udělá příliš chyb, dostane vyhazov
+    int currentDay = 1;       
+    int moneyEarned = 0;     
+    int itemsScanned = 0;    
+    int mistakesMade = 0;   
+    bool wasFired = false;
 };
 
 enum GameSubState {
