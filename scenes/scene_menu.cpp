@@ -1,4 +1,5 @@
-#include "../main.h"                   
+#include "../main.h"  
+#include "game_main.h"                 
 #include "../managers/InputManager.h"
 #include "../managers/AssetManager.h" 
 #include "../structures/Profile.h" 
@@ -6,7 +7,9 @@
 #include "scene_menu.h"
 #include <cmath>
 
+extern ShiftData currentShift;
 extern bool resetGameSignal;
+extern GameSubState currentSubState;
 
 void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused) {
     Rectangle startButton    = { 275, 170, 250, 40 };     
@@ -25,6 +28,11 @@ void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused) {
         if (isUserLoggedIn) {
             isGamePaused = false; 
             resetGameSignal = true;
+            currentSubState = SUB_CALENDAR;
+            activeProfile.shiftsCompleted = 0;
+            activeProfile.totalMoneyEarned = 0;
+            activeProfile.customersServed = 0;
+            SaveProfile();
             currentState = STATE_PLAYING; 
         } else {
             currentState = STATE_PROFILE; 
@@ -99,7 +107,7 @@ bool HasSaveGame()
 {
     if (!isUserLoggedIn) return false;
     
-    if (activeProfile.shiftsCompleted > 0 || activeProfile.maxScore > 0) { 
+    if (activeProfile.shiftsCompleted > 0) { 
         return true; 
     }
     return false;

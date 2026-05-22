@@ -1,4 +1,5 @@
 #include "scene_stats.h"
+#include "../game_main.h"
 #include "../../managers/AssetManager.h"
 #include "../../structures/Profile.h"
 #include "raylib.h"

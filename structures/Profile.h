@@ -24,6 +24,7 @@ struct Profile
     int save_id;
     int shiftsCompleted;
     int customersServed;
+    int totalMoneyEarned;
 
     std::string GetRankName() const;
     void UpdateRank();

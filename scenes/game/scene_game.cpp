@@ -1,4 +1,5 @@
 #include "scene_game.h"
+#include "../game_main.h"
 #include "../../managers/InputManager.h"
 #include "../../managers/AssetManager.h"
 #include "raylib.h"
@@ -6,8 +7,7 @@
 #include <vector>
 #include <string>
 
-#define TIME_LIMIT 30.0f
-
+#define TIME_LIMIT 40.0f
 
 struct Item {
     std::string name;
@@ -43,6 +43,18 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
     if (resetGameSignal) {
         initialized = false;
+
+        currentItemIndex = 0;
+        receiptHistory.clear();  
+        totalSum = 0;            
+        waitingForPayment = false;
+        shiftTimer = TIME_LIMIT; 
+
+        currentShift.moneyEarned = 0;
+        currentShift.itemsScanned = 0;
+        currentShift.mistakesMade = 0;
+        currentShift.wasFired = false;
+
         resetGameSignal = false;
     }
 
@@ -183,17 +195,24 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         if (waitingForPayment && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
             Vector2 mPos = GetMousePosition(); 
+            float scale = fminf((float)GetScreenWidth() / 800.0f, (float)GetScreenHeight() / 600.0f);
+            mPos.x = (mPos.x - ((float)GetScreenWidth() - (800.0f * scale)) * 0.5f) / scale;
+            mPos.y = (mPos.y - ((float)GetScreenHeight() - (600.0f * scale)) * 0.5f) / scale;
             Rectangle payBtn = { 325, 230, 150, 40 };
             if (CheckCollisionPointRec(mPos, payBtn)) {
                 waitingForPayment = false;
                 totalSum = 0;
                 receiptHistory.clear();
-                // Generování nového nákupu
+                leftHand.isHolding = false;
+                leftHand.holdingItemIndex = -1;
+                rightHand.isHolding = false;
+                rightHand.holdingItemIndex = -1;
                 currentCart = {
                     { "Chleb", 42, BROWN, { -50, 410 }, true, false },
                     { "Tesco Chips", 39, RED, { -150, 410 }, true, false },
                     { "Banany", 35, YELLOW, { -250, 410 }, true, false }
                 };
+                return ;
             }
         }
     }

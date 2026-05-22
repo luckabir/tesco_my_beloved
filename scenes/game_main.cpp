@@ -10,13 +10,6 @@ GameSubState currentSubState = SUB_CALENDAR;
 
 void runGame(GameState &currentState, InputManager &input, bool &isGamePaused) {
     // If we receive a reset signal from the main menu / profile
-    if (resetGameSignal) {
-        currentSubState = SUB_CALENDAR;
-        // Notice: resetGameSignal is left true here, 
-        // because scene_game.cpp needs it to reset its own static variables.
-    }
-
-    // Sub-state switcher passing standard parameters
     switch (currentSubState) {
         case SUB_CALENDAR:
             runCalendarScene(currentState, input);
@@ -24,6 +17,7 @@ void runGame(GameState &currentState, InputManager &input, bool &isGamePaused) {
 
         case SUB_PLAYING_CASHIER:
             // This is your actual cashier gameplay function inside scene_game.cpp
+            // Tady už uvnitř máš logiku, která resetGameSignal přečte a vypne!
             runGameRecieved(currentState, input, isGamePaused, currentSubState);
             break;
 

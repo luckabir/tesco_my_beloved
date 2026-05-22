@@ -1,4 +1,5 @@
 #include "scene_calendar.h"
+#include "../game_main.h"
 #include "../../managers/AssetManager.h"
 #include "../../structures/Profile.h"
 #include "raylib.h"
@@ -48,6 +49,7 @@ void runCalendarScene(GameState &currentState, InputManager &input) {
         
         resetGameSignal = true;          // Let scene_game.cpp know it should re-initialize
         currentSubState = SUB_PLAYING_CASHIER; // Switch sub-state directly
+        return;
     }
 
     if (hoverBack && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

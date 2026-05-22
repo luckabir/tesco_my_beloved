@@ -50,6 +50,7 @@ void CreateProfile(const std::string& profileName, int pin)
     activeProfile.profilePicturePath = "ASSets/profile/default_avatar.png"; 
     activeProfile.rank = PlayerRank::NOVACEK;
     activeProfile.save_id = 0;
+    activeProfile.totalMoneyEarned = 0;
 
     isUserLoggedIn = true;
     SaveProfile();
@@ -85,7 +86,7 @@ bool LoadProfile(const std::string& profileName, int enteredPin){
         file >> temp.save_id;
         file >> temp.shiftsCompleted;
         file >> temp.customersServed;
-
+        file >> temp.totalMoneyEarned;
         file.close();
 
         if (temp.pinCode == enteredPin){
@@ -153,6 +154,7 @@ void SaveProfile(){
         file << activeProfile.save_id << "\n";
         file << activeProfile.shiftsCompleted << "\n";
         file << activeProfile.customersServed << "\n";
+        file << activeProfile.totalMoneyEarned << "\n";
         file.close();
     }
 }

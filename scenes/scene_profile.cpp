@@ -182,9 +182,9 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
         }
 
         DrawTextEx(AssetManager::mainFont, TextFormat("Jmeno            %s", inspectedProfile.nickname.c_str()), Vector2{ 310, 130 }, 16.0f, 1.0f, BLACK);
-        DrawTextEx(AssetManager::mainFont, TextFormat("Kasa ID          %04d", inspectedProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
+        DrawTextEx(AssetManager::mainFont, TextFormat("Kasa             %04d", inspectedProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
         DrawTextEx(AssetManager::mainFont, TextFormat("Pozice           %s", inspectedProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
-        DrawTextEx(AssetManager::mainFont, TextFormat("Trzba            %d Kc", inspectedProfile.maxScore), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
+        DrawTextEx(AssetManager::mainFont, TextFormat("Trzba            %d Kc", inspectedProfile.totalMoneyEarned), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
 
         DrawTextEx(AssetManager::mainFont, "ZADEJTE PIN PRO VSTUP DO KASY", Vector2{ 250, 280 }, 14.0f, 1.0f, BLACK);
         
