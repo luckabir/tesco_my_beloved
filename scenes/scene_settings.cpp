@@ -76,7 +76,7 @@ void runSettings(GameState& currentState, InputManager& input)
         timeAccumulator += GetFrameTime();
         double frameDuration = 1.0 / plm_get_framerate(plm);
 
-        while (timeAccumulator >= frameDuration) {
+        if (timeAccumulator >= frameDuration) {
             timeAccumulator -= frameDuration;
             
             plm_frame_t* frame = plm_decode_video(plm);
@@ -109,7 +109,6 @@ void runSettings(GameState& currentState, InputManager& input)
             plm = nullptr;
             videoPlaying = false;
             
-            SetMasterVolume(gameSettings.volume);
             isInitialized = false; 
             currentState = STATE_EXIT; 
         }
@@ -121,6 +120,7 @@ void runSettings(GameState& currentState, InputManager& input)
     if (CheckCollisionPointRec(mousePos, screenModeButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         tempFullscreen = !tempFullscreen;
+        
         ToggleFullscreen();
     }
 
@@ -154,7 +154,7 @@ void runSettings(GameState& currentState, InputManager& input)
             if (plm != nullptr) {
                 videoPlaying = true;
                 timeAccumulator = 0.0f;
-                SetMasterVolume(0.0f);
+                AssetManager::SetActiveMusic(MUSIC_NONE);
                 
                 int w = plm_get_width(plm);
                 int h = plm_get_height(plm);

@@ -34,7 +34,6 @@ int main() {
     LoadProfilesList();
     AssetManager::LoadAll();
     
-    PlayMusicStream(AssetManager::menuMusic);
 
     if (gameSettings.fullscreen) {
         ToggleFullscreen(); 
@@ -46,28 +45,20 @@ int main() {
     while (!WindowShouldClose() && currentState != STATE_EXIT) {
 
         input.Update();
+        AssetManager::UpdateAudio();
+        extern bool videoPlaying;
 
 
-        if (currentState == STATE_INTRO || currentState == STATE_MENU || 
-            currentState == STATE_SETTINGS || currentState == STATE_PROFILE || 
-            currentState == STATE_SCORE || currentState == STATE_SAVES) 
-        {
-            SetMusicVolume(AssetManager::menuMusic, 1.0f);
-            SetMusicVolume(AssetManager::gameMusic, 0.0f);
-            UpdateMusicStream(AssetManager::menuMusic);
+        if (videoPlaying) {
+            AssetManager::SetActiveMusic(MUSIC_NONE);
+        }else if (currentState == STATE_INTRO || currentState == STATE_MENU || currentState == STATE_SETTINGS || currentState == STATE_PROFILE || currentState == STATE_SCORE || currentState == STATE_SAVES){
+            AssetManager::SetActiveMusic(MUSIC_MENU);
         }
-        else if (currentState == STATE_PLAYING) 
-        {
-            if (isGamePaused) 
-            {
-                SetMusicVolume(AssetManager::menuMusic, 0.0f);
-                SetMusicVolume(AssetManager::gameMusic, 0.0f);
-            }
-            else 
-            {
-                SetMusicVolume(AssetManager::menuMusic, 0.0f);
-                SetMusicVolume(AssetManager::gameMusic, 1.0f);
-                UpdateMusicStream(AssetManager::gameMusic);
+        else if (currentState == STATE_PLAYING){
+            if (isGamePaused){
+                AssetManager::SetActiveMusic(MUSIC_NONE);
+            }else{
+                AssetManager::SetActiveMusic(MUSIC_GAME);
             }
         }
 

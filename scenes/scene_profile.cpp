@@ -20,6 +20,7 @@ static char pinInput[5] = "\0";
 static int nameLetterCount = 0;
 static int pinLetterCount = 0;
 static bool errorWrongPin = false;
+static int activeTextBox = 0; 
 
 extern bool resetGameSignal;
 
@@ -156,6 +157,7 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
             {
                 nameInput[0] = '\0'; nameLetterCount = 0;
                 pinInput[0] = '\0'; pinLetterCount = 0;
+                activeTextBox = 1;
                 subState = SUB_EDITACE; 
                 selectedProfileName = ""; 
             }
@@ -245,7 +247,6 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
     // ==========================================
     else if (subState == SUB_EDITACE)
     {
-        static int activeTextBox = 0; 
 
         DrawTextEx(AssetManager::mainFont, "REGISTRACE NOVEHO BRIGADNIKA", Vector2{ 220, 50 }, 22.0f, 1.0f, BLACK);
 
