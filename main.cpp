@@ -4,6 +4,13 @@
 #include "structures/Settings.h"
 #include "structures/Profile.h"
 #include <string.h>
+#include "scenes/scene_intro.h"
+#include "scenes/game_main.h"
+#include "scenes/scene_menu.h"
+#include "scenes/scene_profile.h"
+#include "scenes/scene_saves.h"
+#include "scenes/scene_score.h"
+#include "scenes/scene_settings.h"
 #include <cmath>
 
 int main() {
@@ -21,14 +28,12 @@ int main() {
     SetTargetFPS(targetFPS);
     InitAudioDevice();
     
-    // --- NAČTENÍ A NASTAVENÍ GLOBÁLNÍ HLASITOSTI ---
     LoadSettings();
-    SetMasterVolume(gameSettings.volume); // Master volume nastaví hlasitost pro úplně celou hru
+    SetMasterVolume(gameSettings.volume);
     
     LoadProfilesList();
     AssetManager::LoadAll();
     
-    // Zapneme hudbu (o ztlumení se stará master volume, songy samotné běží na 1.0f)
     PlayMusicStream(AssetManager::menuMusic);
 
     if (gameSettings.fullscreen) {
@@ -42,9 +47,7 @@ int main() {
 
         input.Update();
 
-        // =================================================================
-        // 1. MANAGEMENT HUDBY (Používáme master volume, přepínáme jen 1.0f / 0.0f)
-        // =================================================================
+
         if (currentState == STATE_INTRO || currentState == STATE_MENU || 
             currentState == STATE_SETTINGS || currentState == STATE_PROFILE || 
             currentState == STATE_SCORE || currentState == STATE_SAVES) 
@@ -57,7 +60,6 @@ int main() {
         {
             if (isGamePaused) 
             {
-                // Totální ticho při pauze
                 SetMusicVolume(AssetManager::menuMusic, 0.0f);
                 SetMusicVolume(AssetManager::gameMusic, 0.0f);
             }
@@ -69,9 +71,6 @@ int main() {
             }
         }
 
-        // =================================================================
-        // 2. LOGIKA TITULKŮ OKNA (Bez duplikovaného spouštění runGame)
-        // =================================================================
         if (currentState != lastState) {
             switch (currentState) {
                 case STATE_INTRO:
@@ -105,9 +104,6 @@ int main() {
             lastState = currentState; 
         }
 
-        // =================================================================
-        // 3. VYKRESLOVÁNÍ DO VIRTUÁLNÍHO CANVASU (800x600)
-        // =================================================================
         BeginTextureMode(target);
         ClearBackground(RAYWHITE);
         
@@ -128,7 +124,7 @@ int main() {
                 runSaves(currentState, input);
                 break;
             case STATE_PROFILE:
-                runProfile(currentState, input);
+                runProfile(currentState, input, isGamePaused);
                 break;
             case STATE_SCORE:
                 runScore(currentState, input);
@@ -137,12 +133,10 @@ int main() {
                 break;
         }
 
-        // --- GLOBÁLNÍ UKAZATEL PŘIHLÁŠENÉHO UŽIVATELE UVNITŘ CANVASU ---
         if (currentState != STATE_INTRO) {
             std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
             Color textColor = isUserLoggedIn ? GREEN : RED;
 
-            // Správný výpočet pozice v rámci virtuálního okna 800x600
             Vector2 textSize = MeasureTextEx(AssetManager::mainFont, statusText.c_str(), 14.0f, 1.0f);
             float textX = (float)virtualWidth - textSize.x - 20.0f;
             float textY = 20.0f;
@@ -152,9 +146,7 @@ int main() {
 
         EndTextureMode();
 
-        // =================================================================
-        // 4. FINÁLNÍ VYTEČENÍ TEXTURY NA MONITOR (Letterbox / Aspekt)
-        // =================================================================
+
         BeginDrawing();
             ClearBackground(BLACK); 
 
@@ -177,7 +169,6 @@ int main() {
         EndDrawing();
     }
 
-    // Korektní uvolnění z paměti
     UnloadRenderTexture(target);
     AssetManager::UnloadAll();
     CloseAudioDevice();

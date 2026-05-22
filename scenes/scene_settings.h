@@ -1,7 +1,8 @@
 #ifndef SCENE_SETTINGS_H
 #define SCENE_SETTINGS_H
 
-#include "menu.h"
+#include "../main.h"
+
 
 class InputManager;
 

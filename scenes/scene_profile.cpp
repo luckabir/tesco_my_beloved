@@ -1,4 +1,5 @@
-#include "menu.h"                     
+#include "scene_menu.h"   
+#include "scene_profile.h"                  
 #include "../managers/InputManager.h" 
 #include "../structures/Profile.h"
 #include "../structures/Settings.h"
@@ -6,12 +7,6 @@
 #include "raylib.h"
 #include <cmath>
 #include <fstream>
-
-enum ProfileSubState {
-    SUB_SEZNAM,
-    SUB_DETAIL,
-    SUB_EDITACE
-};
 
 static ProfileSubState subState = SUB_SEZNAM;
 static std::string selectedProfileName = "";
@@ -26,7 +21,9 @@ static int nameLetterCount = 0;
 static int pinLetterCount = 0;
 static bool errorWrongPin = false;
 
-void runProfile(GameState& currentState, InputManager& input)
+extern bool resetGameSignal;
+
+void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused)
 {
     Vector2 mousePos = GetMousePosition();
     float scale = fminf((float)GetScreenWidth() / 800.0f, (float)GetScreenHeight() / 600.0f);
@@ -88,6 +85,10 @@ void runProfile(GameState& currentState, InputManager& input)
                     isTextureLoaded = false;
                 }
                 LogoutProfile(); 
+                isGamePaused = false;    
+                resetGameSignal = true;  
+                currentState = STATE_MENU; 
+                return;
             }
         }
         else 

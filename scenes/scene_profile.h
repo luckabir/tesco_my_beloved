@@ -3,6 +3,12 @@
 
 #include "../main.h"
 
-void runProfile(GameState &currentState, InputManager &input);
+enum ProfileSubState {
+    SUB_SEZNAM,
+    SUB_DETAIL,
+    SUB_EDITACE
+};
+
+void runProfile(GameState &currentState, InputManager &input, bool& isGamePaused);
 
 #endif

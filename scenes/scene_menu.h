@@ -3,9 +3,8 @@
 
 #include "../main.h"
 
-
-bool HasSaveGame();
 void runMenu(GameState &currentState, InputManager &input, bool& isGamePaused);
+bool HasSaveGame();
 void DrawBouncingTescoLogo(int startX, int startY, int logoSize);
 
 #endif
