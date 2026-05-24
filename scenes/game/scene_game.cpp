@@ -245,15 +245,27 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         if (currentCustomer) {
             currentCustomer->Update();
             
+            // 1. Zjistíme, jestli je pás blokovaný
             bool beltBlocked = false;
+            
+            // Pás zastavíme, pokud jakýkoliv NENASKENOVANÝ item 
+            // dosáhl "konce pásu" (např. pozice X = 250)
             for (const auto& item : beltItems) {
-                if (!leftHand.isHolding && !rightHand.isHolding && item->pos.x >= 240 && item->pos.x <= 250 && !item->isScanned) {
+                if (!item->isScanned && item->pos.x >= 200.0f && item->pos.x < 300.0f) {
                     beltBlocked = true;
                 }
             }
+            
+            // 2. Pokud není blokováno a zákazník čeká, posuneme itemy, 
+            // které ještě nedojely na konec
             if (!beltBlocked && currentCustomer->state != PAYING) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    if ((int)i != leftHand.holdingItemIndex && (int)i != rightHand.holdingItemIndex && beltItems[i]->pos.x < 250) {
+                    // Posouváme jen ty, které jsou za koncem pásu a nejsou drženy v ruce
+                    if (!beltItems[i]->isScanned && 
+                        (int)i != leftHand.holdingItemIndex && 
+                        (int)i != rightHand.holdingItemIndex && 
+                        beltItems[i]->pos.x < 250.0f) 
+                    {
                         beltItems[i]->pos.x += 1.5f;
                     }
                 }
