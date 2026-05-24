@@ -2,6 +2,9 @@
 #define ASSET_MANAGER_H
 
 #include "raylib.h"
+#include <string>
+#include <vector>
+#include <map>
 
 enum MusicType
 {
@@ -10,14 +13,30 @@ enum MusicType
     MUSIC_GAME
 };
 
+enum ItemCategory {
+    NORMAL,
+    RESTRICTED_18,
+    BAKERY,
+    WEIGHED
+};
+
+struct ItemTemplate {
+    std::string id;
+    std::string name;
+    ItemCategory category; 
+    int basePrice;
+    int clubcardPrice;
+};
+
 class AssetManager {
 
     public:
         static Font mainFont;
         static Music menuMusic;
         static Music gameMusic;
-
-
+        static std::vector<ItemTemplate> itemDatabase; 
+        static std::map<std::string, Texture2D> textures;
+        
         static void LoadAll();
         static void UnloadAll();
         static void UpdateAudio();
@@ -25,7 +44,9 @@ class AssetManager {
         static void PlayGameMusic();
         static void StopAllMusic();
         static void SetActiveMusic(MusicType type);
-
+        static void LoadItemsCSV(const std::string& path);
+        static ItemTemplate GetRandomItemTemplate();
+        static Texture2D GetTexture(const std::string& id);
     private:
         static Music* currentMusic;
 };

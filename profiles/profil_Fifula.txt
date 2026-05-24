@@ -1,11 +1,11 @@
 ASSets/profile/default_avatar.png
 Fifula
-0
+1
 6383
 4444
 30
-530
+2728
 0
-1
+0
 0
 0

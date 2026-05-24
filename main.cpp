@@ -33,6 +33,7 @@ int main() {
     
     LoadProfilesList();
     AssetManager::LoadAll();
+    AssetManager::LoadItemsCSV("ASSets/data/items.csv");
     
 
     if (gameSettings.fullscreen) {
