@@ -52,12 +52,12 @@ void runStatsScene(GameState &currentState, InputManager &input) {
     DrawTextEx(AssetManager::mainFont, buttonLabel.c_str(), Vector2{ actionBtn.x + 35, actionBtn.y + 14 }, 14.0f, 1.0f, WHITE);
 
     if (hoverAction && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        isProgressSaved = false; // Reset tracking flag for next time
+        isProgressSaved = false; 
         
         if (currentShift.wasFired) {
-            currentState = STATE_MENU;       // Fired -> main menu
+            currentState = STATE_MENU;       
         } else {
-            currentSubState = SUB_CALENDAR;  // Success -> back to sub-calendar
+            currentSubState = SUB_CALENDAR; 
         }
     }
 }

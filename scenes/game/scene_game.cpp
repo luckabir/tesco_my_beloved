@@ -425,7 +425,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 showingDiscounts = false;
                 discountIndex = 0;
                 discountTimer = 0.0f;
-                receiptHistory.clear();
                 beltItems.clear(); 
             }
         }
