@@ -14,7 +14,6 @@
 // 1. OBJEKTOVÁ ARCHITEKTURA (Třídy a Databáze)
 // ==========================================
 
-
 class Item {
 public:
     std::string name;
@@ -51,7 +50,6 @@ public:
     virtual bool requiresSpecialAction() { return false; } 
 };
 
-// Zákazník
 enum CustomerState { WALKING_IN, WAITING, PAYING, WALKING_OUT, GONE };
 
 class Customer {
@@ -70,7 +68,6 @@ public:
         : name(n), age(a), hasClubcard(hasCard), gaveClubcard(false), state(WALKING_IN), 
           hasCheckedCard(false), cardResponse("") 
     { 
-        // Logika musí být uvnitř složených závorek konstruktoru!
         if (hasClubcard && GetRandomValue(1, 100) > 70) {
             gaveClubcard = true;
         }
@@ -88,13 +85,9 @@ public:
     }
     
     void Draw() {
-       // Přetypování na (int) zajistí správné vykreslení na pixelové pozici
-        DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE); // Tělo
-        DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);   // Hlava
-        
-        // Přetypování je nutné i pro text, aby věděl, kam přesně psát
+        DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE); 
+        DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);    
         DrawText(TextFormat("Vek: %d", age), (int)pos.x + 10, (int)pos.y + 20, 16, WHITE);
-        
         if (gaveClubcard) {
             DrawRectangle((int)pos.x + 70, (int)pos.y + 60, 30, 20, ORANGE); 
             DrawText("KARTA", (int)pos.x + 72, (int)pos.y + 65, 8, BLACK);
@@ -128,12 +121,11 @@ bool HandClick(Hand &h, Rectangle rect) {
     return CheckCollisionPointRec(h.pos, rect) && keyPressed;
 }
 
-// Pomocná funkce pro vygenerování nákupu zákazníka (abychom nepsali kód dvakrát)
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
     int randomAge = GetRandomValue(15, 80);
-    bool hasCard = GetRandomValue(0, 1) == 1; // 50% šance na Clubcard
+    bool hasCard = GetRandomValue(1, 100) <= 75;
     customerPtr = std::make_shared<Customer>("Zakaznik", randomAge, hasCard);
-    customerPtr->pos = Vector2{-100.0f, 200.0f}; // Y=150 je pozice za pultem    
+    customerPtr->pos = Vector2{-100.0f, 200.0f};  
     customerPtr->hasCheckedCard = false;
     customerPtr->cardResponse = "";
     
@@ -177,6 +169,12 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     static float mistakeDisplayTimer = 0.0f;
     static std::string mistakeMessage = "";
     static bool askedForCard = false;
+    static bool showingDiscounts = false;
+    static float discountTimer = 0.0f;
+    static int discountIndex = 0;
+
+    static std::vector<std::string> discountLines;
+    static int finalDiscountedTotal = 0;
 
     if (resetGameSignal) {
         initialized = false;
@@ -253,6 +251,21 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         if (leftHand.isHolding) beltItems[leftHand.holdingItemIndex]->pos = Vector2{ leftHand.pos.x - 25, leftHand.pos.y - 20 };
         if (rightHand.isHolding) beltItems[rightHand.holdingItemIndex]->pos = Vector2{ rightHand.pos.x - 25, rightHand.pos.y - 20 };
 
+        // GRAVITACE ITEMU
+        for (size_t i = 0; i < beltItems.size(); i++) {
+            bool held = ((int)i == leftHand.holdingItemIndex && leftHand.isHolding) || ((int)i == rightHand.holdingItemIndex && rightHand.isHolding);
+            if (!held) {
+                auto& item = beltItems[i];
+                bool onSurface =
+                    item->pos.y >= 510;
+                if (!onSurface) {
+                    item->pos.y += 6.0f;
+                    if (item->pos.y > 510)
+                        item->pos.y = 510;
+                }
+            }
+        }
+
         // --- LOGIKA ZÁKAZNÍKA A PÁSU ---
         if (currentCustomer) {
             currentCustomer->Update();
@@ -268,11 +281,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 }
             }
             
-            // 2. Pokud není blokováno a zákazník čeká, posuneme itemy, 
-            // které ještě nedojely na konec
             if (!beltBlocked && currentCustomer->state != PAYING) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    // Posouváme jen ty, které jsou za koncem pásu a nejsou drženy v ruce
                     if (!beltItems[i]->isScanned && 
                         (int)i != leftHand.holdingItemIndex && 
                         (int)i != rightHand.holdingItemIndex && 
@@ -284,38 +294,57 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             }
         }
 
+        if (currentCustomer && currentCustomer->age < 18){
+            Rectangle removeBtn = { 520, 250, 180, 40 };
+            if (HandClick(leftHand, removeBtn) ||
+                HandClick(rightHand, removeBtn))
+            {
+                for (int i = (int)beltItems.size() - 1; i >= 0; i--) {
+                    auto& item = beltItems[i];
+                    if (item->category == RESTRICTED_18) {
+                        if (item->isScanned) {
+                            totalSum -= item->basePrice;
+                            if (i < receiptHistory.size()) {
+                                receiptHistory.erase(
+                                    receiptHistory.begin() + i
+                                );
+                            }
+                        }
+                        beltItems.erase(
+                            beltItems.begin() + i
+                        );
+                    }
+                }
+                mistakeMessage = "Zakazane zbozi odebrano.";
+                mistakeDisplayTimer = 2.0f;
+            }
+        }
+
         // --- SKENOVÁNÍ (Skener posunut na Y: 540) ---
         Rectangle scannerRect = { 350, 540, 100, 20 };
         for (size_t i = 0; i < beltItems.size(); i++) {
             if (!beltItems[i]->isScanned && CheckCollisionRecs(beltItems[i]->getRect(), scannerRect)) {
                 beltItems[i]->isScanned = true;
                 
+                std::string line = beltItems[i]->name + " ... " + std::to_string(beltItems[i]->basePrice) + " Kc";
+                receiptHistory.push_back(line);
+                
+                totalSum += beltItems[i]->basePrice;
+
                 if (beltItems[i]->category == RESTRICTED_18 && currentCustomer->age < 18) {
                     currentShift.mistakesMade++;
                     mistakeMessage = "Chyba! Prodal jsi alkohol nezletilemu!";
                     mistakeDisplayTimer = 3.0f;
                 }
-
-                int finalPrice = (currentCustomer->gaveClubcard) ? beltItems[i]->clubcardPrice : beltItems[i]->basePrice;
                 currentShift.itemsScanned++;
-                currentShift.moneyEarned += finalPrice;
-                totalSum += finalPrice;
-
-                receiptHistory.push_back(beltItems[i]->name + " ... " + std::to_string(finalPrice) + " Kc");
-                if (receiptHistory.size() > 5) receiptHistory.erase(receiptHistory.begin());
             }
         }
 
-        // CHYBA: Zboží hozené na odkladač bez naskenování
         for (size_t i = 0; i < beltItems.size(); i++) {
             if (!beltItems[i]->isScanned && beltItems[i]->pos.x > 500) {
                 currentShift.mistakesMade++; 
                 beltItems[i]->pos.x = -50; 
-                
-                if (currentShift.mistakesMade == 1) mistakeMessage = "Dobre, jsi tu novacek a lidi delaji chyby.";
-                else if (currentShift.mistakesMade == 2) mistakeMessage = "Snad se to uz nebude opakovat.";
-                else if (currentShift.mistakesMade >= 3) {
-                    mistakeMessage = "Trikrat a dost! VEN!";
+                if (currentShift.mistakesMade >= 3) {
                     currentShift.wasFired = true;
                 }
                 mistakeDisplayTimer = 3.0f;
@@ -326,15 +355,24 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         for (const auto& item : beltItems) {
             if (!item->isScanned || item->pos.x < 500) allDone = false;
         }
-        
-        if (allDone && beltItems.size() > 0 && !leftHand.isHolding && !rightHand.isHolding && currentCustomer->state == WAITING) {
+            
+         // CLUBCARD SLEVY
+        if (allDone && beltItems.size() > 0 && !leftHand.isHolding && !rightHand.isHolding && currentCustomer->state == WAITING){
+            if (currentCustomer->gaveClubcard) {
+                showingDiscounts = true;
+                discountTimer = 0.0f;
+                discountIndex = 0;
+                discountLines.clear();
+                finalDiscountedTotal = totalSum;
+            }
+
             currentCustomer->state = PAYING;
         }
 
-       // 2. LOGIKA CLUB CARD (Dotaz rukou)
+       // --- LOGIKA CLUB CARD ---
         if (currentCustomer->state == WAITING) {
-            Rectangle askCardBtn = { 50, 150, 150, 30 };
-            // HandClick nahrazuje kontrolu myši
+            Rectangle askCardBtn = { 50, 150, 150, 30 }; // Definice zde
+            
             if (!currentCustomer->hasCheckedCard && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))) {
                 currentCustomer->hasCheckedCard = true;
                 if (currentCustomer->hasClubcard) {
@@ -342,6 +380,27 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     currentCustomer->cardResponse = "Ano, tady ji mam.";
                 } else {
                     currentCustomer->cardResponse = "Bohuzel ji nemam.";
+                }
+            }
+        }
+
+        // POSTUPNE ODECITANI CLUBCARD SLEV
+        if (showingDiscounts) {
+            discountTimer += GetFrameTime();
+            if (discountTimer >= 0.5f) {
+                discountTimer = 0.0f;
+                if (discountIndex < beltItems.size()) {
+                    auto& item = beltItems[discountIndex];
+                    int discount = item->basePrice - item->clubcardPrice;
+
+                    if (discount > 0) {
+                        discountLines.push_back( item->name + "  -" + std::to_string(discount) + " Kc");
+                        finalDiscountedTotal -= discount;
+                        totalSum = finalDiscountedTotal;
+                    }
+                    discountIndex++;
+                }else {
+                    showingDiscounts = false;
                 }
             }
         }
@@ -361,6 +420,11 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
                 currentCustomer->state = WALKING_OUT;
                 totalSum = 0;
+                receiptHistory.clear();
+                discountLines.clear(); 
+                showingDiscounts = false;
+                discountIndex = 0;
+                discountTimer = 0.0f;
                 receiptHistory.clear();
                 beltItems.clear(); 
             }
@@ -389,14 +453,36 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     DrawText("ODKLADAC", 720, 510, 10, DARKGRAY);
 
     // Monitor kasy
-    DrawRectangle(300, 50, 200, 150, BLACK);
-    DrawRectangleLines(300, 50, 200, 150, GREEN);
-    DrawText("TESCO T-2000", 310, 55, 10, GREEN);
+    DrawRectangle(300, 250, 200, 180, BLACK); // Zvětšeno na výšku 180 pro více textu
+    DrawRectangleLines(300, 250, 200, 180, GREEN);
+    DrawText("TESCO T-2000", 310, 255, 10, GREEN);
     
+    // Výpis položek
     for (size_t i = 0; i < receiptHistory.size(); i++) {
-        DrawText(receiptHistory[i].c_str(), 310, 75 + (i * 15), 12, GREEN);
+        DrawText(receiptHistory[i].c_str(), 310, 275 + (i * 15), 12, GREEN);
     }
-    DrawText(TextFormat("CELKEM: %d Kc", totalSum), 310, 175, 14, RED);
+
+    // Celková suma na spodku monitoru
+    DrawText(TextFormat("CELKEM: %d Kc", totalSum), 310, 400, 14, RED);
+
+    // Tlačítko odebrání alkoholu
+    if (currentCustomer &&
+        currentCustomer->age < 18)
+    {
+        DrawRectangle(520, 250, 180, 40, RED);
+        DrawText("ODEBRAT ZBOZI", 540, 263, 14, WHITE);
+    }
+
+    for (size_t i = 0; i < discountLines.size(); i++) {
+
+    DrawText(
+        discountLines[i].c_str(),
+        310,
+        340 + (i * 15),
+        12,
+        YELLOW
+    );
+}
 
     if (currentCustomer && currentCustomer->state == WAITING) {
         DrawRectangleRec({ 50, 150, 150, 30 }, currentCustomer->hasCheckedCard ? GRAY : ORANGE);
