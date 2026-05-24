@@ -59,15 +59,18 @@ public:
     std::string name;
     int age;
     bool hasClubcard;
+    bool hasCheckedCard;
     bool gaveClubcard; 
+    std::string cardResponse;
     
     Vector2 pos;
     CustomerState state;
 
     Customer(std::string n, int a, bool hasCard) 
-        : name(n), age(a), hasClubcard(hasCard), gaveClubcard(false), state(WALKING_IN) {
-        pos = { -150, 150 }; 
-        
+        : name(n), age(a), hasClubcard(hasCard), gaveClubcard(false), state(WALKING_IN), 
+          hasCheckedCard(false), cardResponse("") 
+    { 
+        // Logika musí být uvnitř složených závorek konstruktoru!
         if (hasClubcard && GetRandomValue(1, 100) > 70) {
             gaveClubcard = true;
         }
@@ -85,13 +88,16 @@ public:
     }
     
     void Draw() {
-        DrawRectangle(pos.x, pos.y, 100, 350, DARKBLUE); // Tělo (protáhl jsem ho níž)
-        DrawCircle(pos.x + 50, pos.y - 30, 40, BEIGE);   // Hlava
-        DrawText(TextFormat("Vek: %d", age), pos.x + 10, pos.y + 20, 16, WHITE);
+       // Přetypování na (int) zajistí správné vykreslení na pixelové pozici
+        DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE); // Tělo
+        DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);   // Hlava
+        
+        // Přetypování je nutné i pro text, aby věděl, kam přesně psát
+        DrawText(TextFormat("Vek: %d", age), (int)pos.x + 10, (int)pos.y + 20, 16, WHITE);
         
         if (gaveClubcard) {
-            DrawRectangle(pos.x + 70, pos.y + 60, 30, 20, ORANGE); 
-            DrawText("KARTA", pos.x + 72, pos.y + 65, 8, BLACK);
+            DrawRectangle((int)pos.x + 70, (int)pos.y + 60, 30, 20, ORANGE); 
+            DrawText("KARTA", (int)pos.x + 72, (int)pos.y + 65, 8, BLACK);
         }
     }
 };
@@ -117,16 +123,22 @@ struct Hand {
     }
 };
 
+bool HandClick(Hand &h, Rectangle rect) {
+    bool keyPressed = (h.isLeft ? IsKeyPressed(KEY_E) : IsKeyPressed(KEY_O));
+    return CheckCollisionPointRec(h.pos, rect) && keyPressed;
+}
+
 // Pomocná funkce pro vygenerování nákupu zákazníka (abychom nepsali kód dvakrát)
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
     int randomAge = GetRandomValue(15, 80);
     bool hasCard = GetRandomValue(0, 1) == 1; // 50% šance na Clubcard
     customerPtr = std::make_shared<Customer>("Zakaznik", randomAge, hasCard);
+    customerPtr->pos = Vector2{-100.0f, 200.0f}; // Y=150 je pozice za pultem    
+    customerPtr->hasCheckedCard = false;
+    customerPtr->cardResponse = "";
     
     int itemCount = GetRandomValue(2, 4);
-    
     Color fallbackColors[] = { BROWN, WHITE, SKYBLUE, PINK, YELLOW, LIME, RED, PURPLE };
-
     for (int i = 0; i < itemCount; i++) {
         ItemTemplate recept = AssetManager::GetRandomItemTemplate();
         Texture2D tex = AssetManager::GetTexture(recept.id);
@@ -319,22 +331,28 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             currentCustomer->state = PAYING;
         }
 
-        Vector2 mPos = GetMousePosition();
-        float scale = fminf((float)GetScreenWidth() / 800.0f, (float)GetScreenHeight() / 600.0f);
-        mPos.x = (mPos.x - ((float)GetScreenWidth() - (800.0f * scale)) * 0.5f) / scale;
-        mPos.y = (mPos.y - ((float)GetScreenHeight() - (600.0f * scale)) * 0.5f) / scale;
-        
-        Rectangle askCardBtn = { 50, 150, 150, 30 };
-        if (CheckCollisionPointRec(mPos, askCardBtn) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && currentCustomer->state == WAITING) {
-            askedForCard = true;
-            if (currentCustomer->hasClubcard) currentCustomer->gaveClubcard = true;
+       // 2. LOGIKA CLUB CARD (Dotaz rukou)
+        if (currentCustomer->state == WAITING) {
+            Rectangle askCardBtn = { 50, 150, 150, 30 };
+            // HandClick nahrazuje kontrolu myši
+            if (!currentCustomer->hasCheckedCard && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))) {
+                currentCustomer->hasCheckedCard = true;
+                if (currentCustomer->hasClubcard) {
+                    currentCustomer->gaveClubcard = true;
+                    currentCustomer->cardResponse = "Ano, tady ji mam.";
+                } else {
+                    currentCustomer->cardResponse = "Bohuzel ji nemam.";
+                }
+            }
         }
 
-        if (currentCustomer->state == PAYING && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        // 3. LOGIKA PLATBY (Zaplacení rukou)
+        if (currentCustomer->state == PAYING) {
             Rectangle payBtn = { 325, 230, 150, 40 };
-            if (CheckCollisionPointRec(mPos, payBtn)) {
+            if (HandClick(leftHand, payBtn) || HandClick(rightHand, payBtn)) {
                 
-                if (currentCustomer->hasClubcard && !askedForCard && !currentCustomer->gaveClubcard) {
+                // Kontrola: Pokud měl kartu a nezeptal ses, je to chyba
+                if (currentCustomer->hasClubcard && !currentCustomer->hasCheckedCard) {
                     currentShift.mistakesMade++;
                     mistakeMessage = "Chyba! Nezeptal jsi se na Clubcard!";
                     mistakeDisplayTimer = 3.0f;
@@ -345,7 +363,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 totalSum = 0;
                 receiptHistory.clear();
                 beltItems.clear(); 
-                askedForCard = false;
             }
         }
 
@@ -382,12 +399,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     DrawText(TextFormat("CELKEM: %d Kc", totalSum), 310, 175, 14, RED);
 
     if (currentCustomer && currentCustomer->state == WAITING) {
-        Rectangle askCardBtn = { 50, 150, 150, 30 };
-        DrawRectangleRec(askCardBtn, ORANGE);
+        DrawRectangleRec({ 50, 150, 150, 30 }, currentCustomer->hasCheckedCard ? GRAY : ORANGE);
         DrawText("Dotaz na Clubcard", 55, 160, 12, BLACK);
-        if (currentCustomer->gaveClubcard) {
-            DrawText("KARTA NACTENA", 50, 190, 14, GREEN);
-        }
     }
 
     DrawText(TextFormat("CAS DNE: %.1fs", shiftTimer), 20, 20, 20, shiftTimer < 30.0f ? RED : BLACK);
@@ -403,13 +416,13 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         item->Draw();
     }
 
-    if (currentCustomer && currentCustomer->state == PAYING) {
-        Rectangle payBtn = { 325, 230, 150, 40 };
-        DrawRectangle(250, 210, 300, 80, LIGHTGRAY);
-        DrawRectangleLines(250, 210, 300, 80, BLACK);
-        DrawText("Zakaznik plati...", 285, 215, 12, BLACK);
-        DrawRectangleRec(payBtn, GREEN);
-        DrawText("VZIT PENIZE (KLIK)", 335, 243, 12, WHITE);
+   if (currentCustomer && currentCustomer->state == PAYING) {
+        DrawRectangleRec({ 325, 230, 150, 40 }, GREEN);
+        DrawText("VZIT PENIZE", 335, 243, 12, WHITE);
+    }
+
+    if (currentCustomer && !currentCustomer->cardResponse.empty()) {
+        DrawText(currentCustomer->cardResponse.c_str(), currentCustomer->pos.x, currentCustomer->pos.y - 60, 16, MAROON);
     }
 
     // 3. Ruce hrají přes všechno ostatní
