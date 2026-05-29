@@ -26,6 +26,7 @@ int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(virtualWidth, virtualHeight, title);
     SetTargetFPS(targetFPS);
+    SetAudioStreamBufferSizeDefault(4096); 
     InitAudioDevice();
     
     LoadSettings();
@@ -46,7 +47,6 @@ int main() {
     while (!WindowShouldClose() && currentState != STATE_EXIT) {
 
         input.Update();
-        AssetManager::UpdateAudio();
         extern bool videoPlaying;
 
 
@@ -62,6 +62,9 @@ int main() {
                 AssetManager::SetActiveMusic(MUSIC_GAME);
             }
         }
+
+                AssetManager::UpdateAudio();
+
 
         if (currentState != lastState) {
             switch (currentState) {

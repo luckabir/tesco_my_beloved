@@ -27,6 +27,161 @@ static const char* yuvShaderSource =
     "    finalColor = vec4(r, g, b, 1.0);\n"
     "}\n";
 
+static plm_t* plm = nullptr;
+static Texture2D yTexture = { 0 };
+static Texture2D uTexture = { 0 };
+static Texture2D vTexture = { 0 };
+static Shader yuvShader = { 0 };
+static float timeAccumulator = 0.0f;
+
+
+static void UnloadRealisticVideo()
+{
+    if (plm != nullptr) {
+        plm_destroy(plm);
+        plm = nullptr;
+    }
+
+    if (yTexture.id > 0) {
+        UnloadTexture(yTexture);
+        yTexture = { 0 };
+    }
+
+    if (uTexture.id > 0) {
+        UnloadTexture(uTexture);
+        uTexture = { 0 };
+    }
+
+    if (vTexture.id > 0) {
+        UnloadTexture(vTexture);
+        vTexture = { 0 };
+    }
+
+    if (yuvShader.id > 0) {
+        UnloadShader(yuvShader);
+        yuvShader = { 0 };
+    }
+
+    videoPlaying = false;
+    timeAccumulator = 0.0f;
+}
+
+static bool StartRealisticVideo()
+{
+    UnloadRealisticVideo();
+
+    plm = plm_create_with_filename("ASSets/video/absolutni_realita.mpeg");
+
+    if (plm == nullptr) {
+        return false;
+    }
+
+    plm_set_audio_enabled(plm, FALSE); // audio z videa nepotřebuješ
+    videoPlaying = true;
+    timeAccumulator = 0.0f;
+
+    AssetManager::SetActiveMusic(MUSIC_NONE);
+
+    int w = plm_get_width(plm);
+    int h = plm_get_height(plm);
+
+    if (w <= 0 || h <= 0) {
+        UnloadRealisticVideo();
+        return false;
+    }
+
+    yuvShader = LoadShaderFromMemory(nullptr, yuvShaderSource);
+
+    int yTexLoc = GetShaderLocation(yuvShader, "yTexture");
+    int uTexLoc = GetShaderLocation(yuvShader, "uTexture");
+    int vTexLoc = GetShaderLocation(yuvShader, "vTexture");
+
+    int yTexUnit = 0;
+    int uTexUnit = 1;
+    int vTexUnit = 2;
+
+    SetShaderValue(yuvShader, yTexLoc, &yTexUnit, SHADER_UNIFORM_INT);
+    SetShaderValue(yuvShader, uTexLoc, &uTexUnit, SHADER_UNIFORM_INT);
+    SetShaderValue(yuvShader, vTexLoc, &vTexUnit, SHADER_UNIFORM_INT);
+
+    Image yImg = { nullptr, w, h, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
+    yTexture = LoadTextureFromImage(yImg);
+
+    Image uImg = { nullptr, w / 2, h / 2, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
+    uTexture = LoadTextureFromImage(uImg);
+
+    Image vImg = { nullptr, w / 2, h / 2, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
+    vTexture = LoadTextureFromImage(vImg);
+
+    SetTextureFilter(yTexture, TEXTURE_FILTER_BILINEAR);
+    SetTextureFilter(uTexture, TEXTURE_FILTER_BILINEAR);
+    SetTextureFilter(vTexture, TEXTURE_FILTER_BILINEAR);
+
+    return true;
+}
+
+static bool UpdateRealisticVideo()
+{
+    if (plm == nullptr) {
+        UnloadRealisticVideo();
+        return true;
+    }
+
+    ClearBackground(BLACK);
+
+    float dt = GetFrameTime();
+
+    const float VIDEO_SPEED = 1.0f;
+
+    timeAccumulator += dt * VIDEO_SPEED;
+
+    double fps = plm_get_framerate(plm);
+    if (fps <= 1.0) {
+        fps = 60.0;
+    }
+
+    double frameDuration = 1.0 / fps;
+
+    int decodedFrames = 0;
+
+    while (timeAccumulator >= frameDuration && decodedFrames < 3) {
+        timeAccumulator -= frameDuration;
+
+        plm_frame_t* frame = plm_decode_video(plm);
+
+        if (frame != nullptr) {
+            UpdateTexture(yTexture, frame->y.data);
+            UpdateTexture(uTexture, frame->cb.data);
+            UpdateTexture(vTexture, frame->cr.data);
+        }
+
+        decodedFrames++;
+    }
+
+    BeginShaderMode(yuvShader);
+        rlActiveTextureSlot(0); rlEnableTexture(yTexture.id);
+        rlActiveTextureSlot(1); rlEnableTexture(uTexture.id);
+        rlActiveTextureSlot(2); rlEnableTexture(vTexture.id);
+        rlActiveTextureSlot(0);
+
+        DrawTexturePro(
+            yTexture,
+            Rectangle{ 0, 0, (float)yTexture.width, (float)yTexture.height },
+            Rectangle{ 0, 0, 800, 600 },
+            Vector2{ 0, 0 },
+            0.0f,
+            WHITE
+        );
+    EndShaderMode();
+
+    if (plm_has_ended(plm)) {
+        UnloadRealisticVideo();
+        return true;
+    }
+
+    return false;
+}
+
 void runSettings(GameState& currentState, InputManager& input)
 {
     static bool isInitialized = false;
@@ -57,13 +212,6 @@ void runSettings(GameState& currentState, InputManager& input)
     Rectangle saveButton       = { 250, 450, 300, 45 };
     Rectangle backButton       = { 250, 510, 300, 45 };
 
-    static plm_t* plm = nullptr;
-    static Texture2D yTexture = { 0 };
-    static Texture2D uTexture = { 0 };
-    static Texture2D vTexture = { 0 };
-    static Shader yuvShader = { 0 };
-    static float timeAccumulator = 0.0f;
-
     Vector2 mousePos = GetMousePosition();
 
     float scale = fminf((float)GetScreenWidth() / 800.0f, (float)GetScreenHeight() / 600.0f);
@@ -71,51 +219,15 @@ void runSettings(GameState& currentState, InputManager& input)
     mousePos.y = (mousePos.y - ((float)GetScreenHeight() - (600.0f * scale)) * 0.5f) / scale;
 
     if (videoPlaying) {
-        ClearBackground(BLACK);
+        bool videoEnded = UpdateRealisticVideo();
 
-        timeAccumulator += GetFrameTime();
-        double frameDuration = 1.0 / plm_get_framerate(plm);
-
-        if (timeAccumulator >= frameDuration) {
-            timeAccumulator -= frameDuration;
-            
-            plm_frame_t* frame = plm_decode_video(plm);
-            if (frame != nullptr) {
-                UpdateTexture(yTexture, frame->y.data);
-                UpdateTexture(uTexture, frame->cb.data);
-                UpdateTexture(vTexture, frame->cr.data);
-            }
+        if (videoEnded) {
+            isInitialized = false;
+            currentState = STATE_EXIT;
         }
 
-        BeginShaderMode(yuvShader);
-            rlActiveTextureSlot(0); rlEnableTexture(yTexture.id);
-            rlActiveTextureSlot(1); rlEnableTexture(uTexture.id);
-            rlActiveTextureSlot(2); rlEnableTexture(vTexture.id);
-            rlActiveTextureSlot(0); 
-
-            DrawTexturePro(yTexture, 
-                           Rectangle{ 0, 0, (float)yTexture.width, (float)yTexture.height },
-                           Rectangle{ 0, 0, 800, 600 }, 
-                           Vector2{ 0, 0 }, 0.0f, WHITE);
-        EndShaderMode();
-
-        if (plm_has_ended(plm)) {
-            plm_destroy(plm);
-            UnloadTexture(yTexture);
-            UnloadTexture(uTexture);
-            UnloadTexture(vTexture);
-            UnloadShader(yuvShader);
-            
-            plm = nullptr;
-            videoPlaying = false;
-            
-            isInitialized = false; 
-            currentState = STATE_EXIT; 
-        }
-        
-        return; 
+        return;
     }
-
 
     if (CheckCollisionPointRec(mousePos, screenModeButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
@@ -149,41 +261,12 @@ void runSettings(GameState& currentState, InputManager& input)
         SaveSettings(); 
 
         if (isRealistic) {
-            plm = plm_create_with_filename("ASSets/video/absolutni_realita.mpeg");
-
-            if (plm != nullptr) {
-                videoPlaying = true;
-                timeAccumulator = 0.0f;
-                AssetManager::SetActiveMusic(MUSIC_NONE);
-                
-                int w = plm_get_width(plm);
-                int h = plm_get_height(plm);
-                
-                yuvShader = LoadShaderFromMemory(nullptr, yuvShaderSource);
-                
-                int yTexLoc = GetShaderLocation(yuvShader, "yTexture");
-                int uTexLoc = GetShaderLocation(yuvShader, "uTexture");
-                int vTexLoc = GetShaderLocation(yuvShader, "vTexture");
-                
-                int yTexUnit = 0; int uTexUnit = 1; int vTexUnit = 2;
-                SetShaderValue(yuvShader, yTexLoc, &yTexUnit, SHADER_UNIFORM_INT);
-                SetShaderValue(yuvShader, uTexLoc, &uTexUnit, SHADER_UNIFORM_INT);
-                SetShaderValue(yuvShader, vTexLoc, &vTexUnit, SHADER_UNIFORM_INT);
-
-                Image yImg = { nullptr, w, h, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
-                yTexture = LoadTextureFromImage(yImg);
-                Image uImg = { nullptr, w / 2, h / 2, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
-                uTexture = LoadTextureFromImage(uImg);
-                Image vImg = { nullptr, w / 2, h / 2, 1, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE };
-                vTexture = LoadTextureFromImage(vImg);
-                
-                SetTextureFilter(yTexture, TEXTURE_FILTER_BILINEAR);
-                SetTextureFilter(uTexture, TEXTURE_FILTER_BILINEAR);
-                SetTextureFilter(vTexture, TEXTURE_FILTER_BILINEAR);
-                return;
-            } else {
-                currentState = STATE_EXIT;
+            if (!StartRealisticVideo()) {
+                isInitialized = false;
+                currentState = STATE_MENU;
             }
+
+            return;
         } else {
             isInitialized = false;
             currentState = STATE_MENU;
