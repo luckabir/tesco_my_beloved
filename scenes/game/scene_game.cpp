@@ -2,17 +2,16 @@
 #include "../game_main.h"
 #include "../../managers/InputManager.h"
 #include "../../managers/AssetManager.h"
+#include "../../classes/Customer.h"
+#include "../../classes/Player.h"
+#include "../../classes/Day.h"
 #include "raylib.h"
 #include "raymath.h"
 #include <vector>
 #include <string>
 #include <memory>
 
-#define DAY_TIME_LIMIT 120.0f // 2 minuty na den
 
-// ==========================================
-// 1. OBJEKTOVÁ ARCHITEKTURA (Třídy a Databáze)
-// ==========================================
 
 class Item {
 public:
@@ -50,76 +49,7 @@ public:
     virtual bool requiresSpecialAction() { return false; } 
 };
 
-enum CustomerState { WALKING_IN, WAITING, PAYING, WALKING_OUT, GONE };
 
-class Customer {
-public:
-    std::string name;
-    int age;
-    bool hasClubcard;
-    bool hasCheckedCard;
-    bool gaveClubcard; 
-    std::string cardResponse;
-    
-    Vector2 pos;
-    CustomerState state;
-
-    Customer(std::string n, int a, bool hasCard) 
-        : name(n), age(a), hasClubcard(hasCard), gaveClubcard(false), state(WALKING_IN), 
-          hasCheckedCard(false), cardResponse("") 
-    { 
-        if (hasClubcard && GetRandomValue(1, 100) > 70) {
-            gaveClubcard = true;
-        }
-    }
-
-    void Update() {
-        if (state == WALKING_IN) {
-            pos.x += 3.0f;
-            if (pos.x >= 350) state = WAITING;
-        }
-        else if (state == WALKING_OUT) {
-            pos.x += 4.0f;
-            if (pos.x > 900) state = GONE;
-        }
-    }
-    
-    void Draw() {
-        DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE); 
-        DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);    
-        DrawText(TextFormat("Vek: %d", age), (int)pos.x + 10, (int)pos.y + 20, 16, WHITE);
-        if (gaveClubcard) {
-            DrawRectangle((int)pos.x + 70, (int)pos.y + 60, 30, 20, ORANGE); 
-            DrawText("KARTA", (int)pos.x + 72, (int)pos.y + 65, 8, BLACK);
-        }
-    }
-};
-
-struct Hand {
-    Vector2 pos;
-    bool isHolding;
-    int holdingItemIndex; 
-    Color skinColor;
-    bool isLeft;
-
-    void Draw() {
-        Vector2 elbow = isLeft ? Vector2{ 100, 700 } : Vector2{ 700, 700 };
-        DrawLineEx(elbow, pos, 35.0f, skinColor); 
-        DrawCircleV(pos, 25, skinColor); 
-        
-        DrawCircle(pos.x, pos.y - 25, 8, skinColor);
-        DrawCircle(pos.x - 15, pos.y - 15, 8, skinColor);
-        DrawCircle(pos.x + 15, pos.y - 15, 8, skinColor);
-
-        DrawText(isLeft ? "L (E)" : "P (O)", pos.x - 12, pos.y - 5, 12, BLACK);
-        if (isHolding) DrawCircle(pos.x, pos.y, 10, RED); 
-    }
-};
-
-bool HandClick(Hand &h, Rectangle rect) {
-    bool keyPressed = (h.isLeft ? IsKeyPressed(KEY_E) : IsKeyPressed(KEY_O));
-    return CheckCollisionPointRec(h.pos, rect) && keyPressed;
-}
 
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
     int randomAge = GetRandomValue(15, 80);
@@ -165,7 +95,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     static std::vector<std::string> receiptHistory;
     static int totalSum = 0;
     
-    static float shiftTimer = DAY_TIME_LIMIT; 
+    static float shiftTimer = Day::TimeLimit(); 
     static float mistakeDisplayTimer = 0.0f;
     static std::string mistakeMessage = "";
     static bool askedForCard = false;
@@ -185,8 +115,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         leftHand = { Vector2{ 250, 300 }, false, -1, {255, 204, 153, 255}, true };
         rightHand = { Vector2{ 550, 300 }, false, -1, {255, 204, 153, 255}, false };
         
-        shiftTimer = DAY_TIME_LIMIT; 
-        currentShift = {0, 0, 0, false}; 
+        shiftTimer = Day::TimeLimit(); 
+        Day::ResetShiftStats(currentShift);        
         
         receiptHistory.clear();  
         totalSum = 0;            

@@ -2,6 +2,7 @@
 #include "../game_main.h"
 #include "../../managers/AssetManager.h"
 #include "../../structures/Profile.h"
+#include "../../classes/Day.h"
 #include "raylib.h"
 #include <cmath>
 
@@ -42,10 +43,7 @@ void runCalendarScene(GameState &currentState, InputManager &input) {
     // Input processing
     if (hoverStart && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         // Reset counters for the new shift
-        currentShift.moneyEarned = 0;
-        currentShift.itemsScanned = 0;
-        currentShift.mistakesMade = 0;
-        currentShift.wasFired = false;
+        Day::ResetShiftStats(currentShift);
         
         resetGameSignal = true;          // Let scene_game.cpp know it should re-initialize
         currentSubState = SUB_PLAYING_CASHIER; // Switch sub-state directly
