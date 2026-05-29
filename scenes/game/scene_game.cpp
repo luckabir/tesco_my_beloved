@@ -2,7 +2,9 @@
 #include "../game_main.h"
 #include "../../managers/InputManager.h"
 #include "../../managers/AssetManager.h"
+#include "../../managers/CustomerManager.h"
 #include "../../classes/Customer.h"
+#include "../../classes/QTEEvent.h"
 #include "../../classes/Player.h"
 #include "../../classes/Day.h"
 #include "raylib.h"
@@ -11,7 +13,7 @@
 #include <string>
 #include <memory>
 
-
+#define QTE_TIME_LIMIT 20.0f
 
 class Item {
 public:
@@ -52,21 +54,14 @@ public:
 
 
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
-    int randomAge = GetRandomValue(15, 80);
-    bool hasCard = GetRandomValue(1, 100) <= 75;
-    customerPtr = std::make_shared<Customer>("Zakaznik", randomAge, hasCard);
-    customerPtr->pos = Vector2{-100.0f, 200.0f};  
-    customerPtr->hasCheckedCard = false;
-    customerPtr->cardResponse = "";
-    
+    customerPtr = CustomerManager::CreateCustomer();
+    customerPtr->SayArrivalLine();
     int itemCount = GetRandomValue(2, 4);
     Color fallbackColors[] = { BROWN, WHITE, SKYBLUE, PINK, YELLOW, LIME, RED, PURPLE };
     for (int i = 0; i < itemCount; i++) {
-        ItemTemplate recept = AssetManager::GetRandomItemTemplate();
+        ItemTemplate recept = CustomerManager::PickItemForCustomer(*customerPtr);        
         Texture2D tex = AssetManager::GetTexture(recept.id);
-        
         Color fColor = fallbackColors[GetRandomValue(0, 7)];
-        
         Vector2 startPos = {-50.0f - (i * 100.0f), 510.0f};
 
         belt.push_back(std::make_shared<Item>(
@@ -86,15 +81,12 @@ void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<s
 // ==========================================
 void runGameRecieved(GameState &currentState, InputManager &input, bool &isGamePaused, GameSubState &subState) {
     SetExitKey(KEY_NULL);
-
     static bool initialized = false;
     static Hand leftHand, rightHand;
-    
     static std::shared_ptr<Customer> currentCustomer = nullptr;
     static std::vector<std::shared_ptr<Item>> beltItems;
     static std::vector<std::string> receiptHistory;
     static int totalSum = 0;
-    
     static float shiftTimer = Day::TimeLimit(); 
     static float mistakeDisplayTimer = 0.0f;
     static std::string mistakeMessage = "";
@@ -102,14 +94,24 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     static bool showingDiscounts = false;
     static float discountTimer = 0.0f;
     static int discountIndex = 0;
-
     static std::vector<std::string> discountLines;
     static int finalDiscountedTotal = 0;
+    static bool qteActive = false;
+    static QTEEvent activeQTE;
+    static float qteTimer = 0.0f;
+    static std::string qteResultText = "";
+    static float qteResultTimer = 0.0f;
+    static bool qteRolledForThisCustomer = false;
 
     if (resetGameSignal) {
         initialized = false;
         resetGameSignal = false;
+        qteActive = false;
+        qteTimer = 0.0f;
+        qteResultText = "";
+        qteResultTimer = 0.0f;
     }
+
 
     if (!initialized) {
         leftHand = { Vector2{ 250, 300 }, false, -1, {255, 204, 153, 255}, true };
@@ -123,8 +125,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         askedForCard = false;
         beltItems.clear();
 
-        // --- SPAWN PRVNÍHO ZÁKAZNÍKA PŘES ASSET MANAGER ---
         SpawnCustomerAndItems(currentCustomer, beltItems);
+        qteRolledForThisCustomer = false;
 
         initialized = true;
     }
@@ -138,6 +140,56 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     if (!isGamePaused) {
         shiftTimer -= GetFrameTime();
         if (mistakeDisplayTimer > 0) mistakeDisplayTimer -= GetFrameTime();
+
+        if (qteResultTimer > 0.0f) {
+            qteResultTimer -= GetFrameTime();
+        }
+ 
+    if (currentCustomer &&
+        !qteActive &&
+        !qteRolledForThisCustomer &&
+        !currentCustomer->qteSet.empty() &&
+        currentCustomer->state == WAITING)
+    {
+        qteRolledForThisCustomer = true;
+
+        if (GetRandomValue(1, 100) <= 40) {
+            activeQTE = CustomerManager::PickQTEForCustomer(*currentCustomer);
+            activeQTE.timeLimit = QTE_TIME_LIMIT;
+            qteTimer = activeQTE.timeLimit;
+            qteActive = true;
+        }
+    }
+
+        if (qteActive && currentCustomer) {
+            qteTimer -= GetFrameTime();
+
+            int pressedKey = KEY_NULL;
+
+            if (IsKeyPressed(KEY_R)) pressedKey = KEY_R;
+            if (IsKeyPressed(KEY_T)) pressedKey = KEY_T;
+            if (IsKeyPressed(KEY_Z)) pressedKey = KEY_Z;
+            if (IsKeyPressed(KEY_U)) pressedKey = KEY_U;
+
+            bool answered = pressedKey != KEY_NULL;
+            bool timeOut = qteTimer <= 0.0f;
+
+            if (answered || timeOut) {
+                bool success = answered && pressedKey == activeQTE.correctKey;
+
+                if (success) {
+                    currentCustomer->ChangePatience(activeQTE.patienceSuccess);
+                    qteResultText = activeQTE.successReply;
+                } else {
+                    currentCustomer->ChangePatience(activeQTE.patienceFail);
+                    qteResultText = activeQTE.failReply;
+                }
+
+                qteResultTimer = 2.0f;
+                qteActive = false;
+            }
+        }
+
 
         if (shiftTimer <= 0.0f || currentShift.wasFired) {
             subState = SUB_STATS; 
@@ -199,6 +251,10 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         // --- LOGIKA ZÁKAZNÍKA A PÁSU ---
         if (currentCustomer) {
             currentCustomer->Update();
+
+            currentCustomer->UpdatePatience(GetFrameTime());
+
+           
             
             // 1. Zjistíme, jestli je pás blokovaný
             bool beltBlocked = false;
@@ -221,6 +277,22 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                         beltItems[i]->pos.x += 1.5f;
                     }
                 }
+            }
+        }
+
+         if (currentCustomer &&
+            !qteActive &&
+            !qteRolledForThisCustomer &&
+            !currentCustomer->qteSet.empty() &&
+            currentCustomer->state == WAITING)
+        {
+            qteRolledForThisCustomer = true;
+
+            if (GetRandomValue(1, 100) <= 40) {
+                activeQTE = CustomerManager::PickQTEForCustomer(*currentCustomer);
+                activeQTE.timeLimit = QTE_TIME_LIMIT;
+                qteTimer = activeQTE.timeLimit;
+                qteActive = true;
             }
         }
 
@@ -348,7 +420,11 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     if (currentShift.mistakesMade >= 3) currentShift.wasFired = true;
                 }
 
+                currentCustomer->SayExitLine();
                 currentCustomer->state = WALKING_OUT;
+                qteActive = false;
+                qteResultText = "";
+                qteResultTimer = 0.0f;
                 totalSum = 0;
                 receiptHistory.clear();
                 discountLines.clear(); 
@@ -362,6 +438,11 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         // --- SPAWN DALŠÍHO ZÁKAZNÍKA ---
         if (currentCustomer->state == GONE) {
             SpawnCustomerAndItems(currentCustomer, beltItems);
+            qteRolledForThisCustomer = false;
+            qteActive = false;
+            qteTimer = 0.0f;
+            qteResultText = "";
+            qteResultTimer = 0.0f;
         }
     }
 
@@ -377,9 +458,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     DrawRectangle(300, 500, 200, 100, GRAY);          
     DrawRectangle(350, 540, 100, 20, RED); // Skener           
     DrawRectangle(500, 500, 300, 100, LIGHTGRAY);     
-    
-    DrawText("PAS", 20, 510, 10, WHITE);
-    DrawText("ODKLADAC", 720, 510, 10, DARKGRAY);
 
     // Monitor kasy
     DrawRectangle(300, 250, 200, 180, BLACK); // Zvětšeno na výšku 180 pro více textu
@@ -392,7 +470,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     }
 
     // Celková suma na spodku monitoru
-    DrawText(TextFormat("CELKEM: %d Kc", totalSum), 310, 400, 14, RED);
+    DrawText(TextFormat("CELKEM %d Kc", totalSum), 310, 400, 14, RED);
 
     // Tlačítko odebrání alkoholu
     if (currentCustomer &&
@@ -418,15 +496,14 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         DrawText("Dotaz na Clubcard", 55, 160, 12, BLACK);
     }
 
-    DrawText(TextFormat("CAS DNE: %.1fs", shiftTimer), 20, 20, 20, shiftTimer < 30.0f ? RED : BLACK);
-    DrawText(TextFormat("CHYBY: %d / 3", currentShift.mistakesMade), 650, 20, 20, currentShift.mistakesMade > 1 ? RED : BLACK);
+    DrawText(TextFormat("CAS DNE %.1fs", shiftTimer), 20, 20, 20, shiftTimer < 30.0f ? RED : BLACK);
+    DrawText(TextFormat("CHYBY %d / 3", currentShift.mistakesMade), 650, 20, 20, currentShift.mistakesMade > 1 ? RED : BLACK);
 
     if (mistakeDisplayTimer > 0.0f) {
         DrawRectangle(0, 250, 800, 60, Fade(RED, 0.8f));
         DrawText(mistakeMessage.c_str(), 400 - MeasureText(mistakeMessage.c_str(), 20) / 2, 270, 20, WHITE);
     }
 
-    // Vykreslení zboží pomocí vestavěné metody Draw (S fallbackem na barvu)
     for (const auto& item : beltItems) {
         item->Draw();
     }
@@ -440,7 +517,32 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         DrawText(currentCustomer->cardResponse.c_str(), currentCustomer->pos.x, currentCustomer->pos.y - 60, 16, MAROON);
     }
 
+    if (qteActive) {
+        DrawRectangle(80, 60, 640, 150, Fade(BLACK, 0.85f));
+        DrawRectangleLines(80, 60, 640, 150, YELLOW);
+
+        DrawText(activeQTE.customerLine.c_str(), 100, 80, 18, WHITE);
+
+        std::string rText = activeQTE.optionR.empty() ? "slusna odpoved" : activeQTE.optionR;
+        std::string tText = activeQTE.optionT.empty() ? "prakticka odpoved" : activeQTE.optionT;
+        std::string zText = activeQTE.optionZ.empty() ? "pravidla / zakon" : activeQTE.optionZ;
+        std::string uText = activeQTE.optionU.empty() ? "zrychlit" : activeQTE.optionU;
+
+        DrawText(TextFormat("R) %s", rText.c_str()), 100, 110, 14, RAYWHITE);
+        DrawText(TextFormat("T) %s", tText.c_str()), 100, 132, 14, RAYWHITE);
+        DrawText(TextFormat("Z) %s", zText.c_str()), 100, 154, 14, RAYWHITE);
+        DrawText(TextFormat("U) %s", uText.c_str()), 100, 176, 14, RAYWHITE);
+
+        DrawText(TextFormat("%.1f", qteTimer), 650, 80, 22, RED);
+    }
+
     // 3. Ruce hrají přes všechno ostatní
     leftHand.Draw();
     rightHand.Draw();
+
+    if (qteResultTimer > 0.0f) {
+    DrawRectangle(130, 215, 540, 45, Fade(RAYWHITE, 0.9f));
+    DrawRectangleLines(130, 215, 540, 45, DARKGRAY);
+    DrawText(qteResultText.c_str(), 145, 230, 16, MAROON);
+}
 }
