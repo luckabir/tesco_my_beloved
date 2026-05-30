@@ -32,11 +32,13 @@ class AssetManager {
 
     public:
         static Font mainFont;
-        static Music menuMusic;
-        static Music gameMusic;
+        static Sound menuMusic;
+        static Sound gameMusic;
         static std::vector<ItemTemplate> itemDatabase; 
         static std::map<std::string, Texture2D> textures;
-        
+        static std::map<std::string, Texture2D> customerTextures;
+
+
         static void LoadAll();
         static void UnloadAll();
         static void UpdateAudio();
@@ -47,8 +49,12 @@ class AssetManager {
         static void LoadItemsCSV(const std::string& path);
         static ItemTemplate GetRandomItemTemplate();
         static Texture2D GetTexture(const std::string& id);
-    private:
-        static Music* currentMusic;
+        static void PreloadItemTextures();
+        static void PreloadCustomerTextures();
+        static Texture2D GetCustomerTexture(const std::string& id);
+       
+        private:
+        static Sound* currentMusic;
 };
 
 

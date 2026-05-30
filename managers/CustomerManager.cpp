@@ -461,41 +461,27 @@ QTEEvent CustomerManager::PickQTEForCustomer(const Customer& customer)
 
 static Texture2D GetCustomerTexture(const std::string& customerId, CustomerArchetype archetype, bool isRegular)
 {
-    static Texture2D normalTex = LoadTexture("ASSets/textures/customers/normal.png");
-    static Texture2D rushingTex = LoadTexture("ASSets/textures/customers/rushing.png");
-    static Texture2D talkativeTex = LoadTexture("ASSets/textures/customers/talkative.png");
-    static Texture2D angryTex = LoadTexture("ASSets/textures/customers/angry.png");
-    static Texture2D confusedTex = LoadTexture("ASSets/textures/customers/confused.png");
-
-    static Texture2D shrekTex = LoadTexture("ASSets/textures/customers/shrek.png");
-    static Texture2D barnsTex = LoadTexture("ASSets/textures/customers/barns_courtney.png");
-    static Texture2D doctorTex = LoadTexture("ASSets/textures/customers/10th_doc.png");
-    static Texture2D chloeTex = LoadTexture("ASSets/textures/customers/chloe.png");
-    static Texture2D krtkusTex = LoadTexture("ASSets/textures/customers/krtkus.png");
-
-    static Texture2D tunaTex = LoadTexture("ASSets/textures/customers/tuna.png");
-    static Texture2D spacekTex = LoadTexture("ASSets/textures/customers/spacek.png");
-    static Texture2D sugarTex = LoadTexture("ASSets/textures/customers/denny.png");
-    static Texture2D alastorTex = LoadTexture("ASSets/textures/customers/alastor.png");
-
     if (isRegular) {
-        if (customerId == "shrek") return shrekTex;
-        if (customerId == "barns_courtney") return barnsTex;
-        if (customerId == "doctor10") return doctorTex;
-        if (customerId == "chloe_price") return chloeTex;
-        if (customerId == "big_krtkus") return krtkusTex;
-        if (customerId == "honza_tuna") return tunaTex;
-        if (customerId == "honza_spacek") return spacekTex;
-        if (customerId == "sugar_denny") return sugarTex;
-        if (customerId == "alastor") return alastorTex;
+        return AssetManager::GetCustomerTexture(customerId);
     }
 
-    if (archetype == ARCH_RUSHING) return rushingTex;
-    if (archetype == ARCH_TALKATIVE) return talkativeTex;
-    if (archetype == ARCH_ANGRY) return angryTex;
-    if (archetype == ARCH_CONFUSED) return confusedTex;
+    if (archetype == ARCH_RUSHING) {
+        return AssetManager::GetCustomerTexture("rushing");
+    }
 
-    return normalTex;
+    if (archetype == ARCH_TALKATIVE) {
+        return AssetManager::GetCustomerTexture("talkative");
+    }
+
+    if (archetype == ARCH_ANGRY) {
+        return AssetManager::GetCustomerTexture("angry");
+    }
+
+    if (archetype == ARCH_CONFUSED) {
+        return AssetManager::GetCustomerTexture("confused");
+    }
+
+    return AssetManager::GetCustomerTexture("normal");
 }
 
 //----------------------------

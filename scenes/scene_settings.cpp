@@ -131,20 +131,23 @@ static bool UpdateRealisticVideo()
 
     float dt = GetFrameTime();
 
-    const float VIDEO_SPEED = 1.0f;
-
-    timeAccumulator += dt * VIDEO_SPEED;
+    const float VIDEO_SPEED = 0.85f; 
 
     double fps = plm_get_framerate(plm);
     if (fps <= 1.0) {
         fps = 60.0;
     }
 
-    double frameDuration = 1.0 / fps;
+    double frameDuration = 1.0 / (fps * VIDEO_SPEED);
 
-    int decodedFrames = 0;
+    timeAccumulator += dt;
 
-    while (timeAccumulator >= frameDuration && decodedFrames < 3) {
+    // kdyz se hra sekne, zahodime backlog
+    if (timeAccumulator > frameDuration * 2.0) {
+        timeAccumulator = frameDuration;
+    }
+
+    if (timeAccumulator >= frameDuration) {
         timeAccumulator -= frameDuration;
 
         plm_frame_t* frame = plm_decode_video(plm);
@@ -154,14 +157,18 @@ static bool UpdateRealisticVideo()
             UpdateTexture(uTexture, frame->cb.data);
             UpdateTexture(vTexture, frame->cr.data);
         }
-
-        decodedFrames++;
     }
 
     BeginShaderMode(yuvShader);
-        rlActiveTextureSlot(0); rlEnableTexture(yTexture.id);
-        rlActiveTextureSlot(1); rlEnableTexture(uTexture.id);
-        rlActiveTextureSlot(2); rlEnableTexture(vTexture.id);
+        rlActiveTextureSlot(0);
+        rlEnableTexture(yTexture.id);
+
+        rlActiveTextureSlot(1);
+        rlEnableTexture(uTexture.id);
+
+        rlActiveTextureSlot(2);
+        rlEnableTexture(vTexture.id);
+
         rlActiveTextureSlot(0);
 
         DrawTexturePro(
@@ -333,3 +340,4 @@ void runSettings(GameState& currentState, InputManager& input)
     DrawRectangleRec(backButton, hoverBack ? LIGHTGRAY : GRAY);
     DrawTextEx(AssetManager::mainFont, "ZPET BEZ ULOZENI", Vector2{ backButton.x + 50, backButton.y + 14 }, 14.0f, 1.0f, BLACK);
 }
+

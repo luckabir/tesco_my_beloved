@@ -26,7 +26,7 @@ int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(virtualWidth, virtualHeight, title);
     SetTargetFPS(targetFPS);
-    SetAudioStreamBufferSizeDefault(4096); 
+    SetAudioStreamBufferSizeDefault(32768); 
     InitAudioDevice();
     
     LoadSettings();
@@ -35,7 +35,8 @@ int main() {
     LoadProfilesList();
     AssetManager::LoadAll();
     AssetManager::LoadItemsCSV("ASSets/data/items.csv");
-    
+    AssetManager::PreloadItemTextures();
+    AssetManager::PreloadCustomerTextures();
 
     if (gameSettings.fullscreen) {
         ToggleFullscreen(); 
@@ -49,6 +50,17 @@ int main() {
         input.Update();
         extern bool videoPlaying;
 
+        float frameTime = GetFrameTime();
+
+        static float debugRuntime = 0.0f;
+        debugRuntime += frameTime;
+
+        if (debugRuntime > 2.0f && currentState == STATE_PLAYING && frameTime > 0.08f) {
+            TraceLog(LOG_WARNING, "GAMEPLAY FRAME SPIKE: %.3f seconds, videoPlaying=%d",
+                frameTime,
+                videoPlaying
+            );
+        }
 
         if (videoPlaying) {
             AssetManager::SetActiveMusic(MUSIC_NONE);

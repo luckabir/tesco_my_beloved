@@ -145,21 +145,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             qteResultTimer -= GetFrameTime();
         }
  
-    if (currentCustomer &&
-        !qteActive &&
-        !qteRolledForThisCustomer &&
-        !currentCustomer->qteSet.empty() &&
-        currentCustomer->state == WAITING)
-    {
-        qteRolledForThisCustomer = true;
-
-        if (GetRandomValue(1, 100) <= 40) {
-            activeQTE = CustomerManager::PickQTEForCustomer(*currentCustomer);
-            activeQTE.timeLimit = QTE_TIME_LIMIT;
-            qteTimer = activeQTE.timeLimit;
-            qteActive = true;
-        }
-    }
 
         if (qteActive && currentCustomer) {
             qteTimer -= GetFrameTime();
