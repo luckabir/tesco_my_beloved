@@ -7,10 +7,12 @@ Customer::Customer(
     bool hasClubcard,
     bool isRegular,
     CustomerArchetype archetype,
-    int maxPatience
+    int maxPatience,
+    Texture2D texture
 )
     : id(id),
       name(name),
+      texture(texture),
       age(age),
       hasClubcard(hasClubcard),
       hasCheckedCard(false),
@@ -22,7 +24,9 @@ Customer::Customer(
       patience((float)maxPatience),
       mood(MOOD_NEUTRAL),
       pos(Vector2{-100.0f, 200.0f}),
-      state(WALKING_IN)
+      state(WALKING_IN),
+      speechText(""),
+      speechTimer(0.0f)
 {
     if (hasClubcard && GetRandomValue(1, 100) > 70) {
         gaveClubcard = true;
@@ -128,8 +132,19 @@ void Customer::DrawPatienceBar() const
 
 void Customer::Draw() const
 {
-    DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE);
-    DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);
+    if (texture.id > 0) {
+        DrawTexturePro(
+            texture,
+            Rectangle{ 0, 0, (float)texture.width, (float)texture.height },
+            Rectangle{ pos.x, pos.y - 0, 200, 390 },
+            Vector2{ 0, 0 },
+            0.0f,
+            WHITE
+        );
+    } else {
+        DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE);
+        DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);
+    }
 
     DrawText(name.c_str(), (int)pos.x, (int)pos.y - 120, 14, BLACK);
     DrawText(TextFormat("Vek %d", age), (int)pos.x + 10, (int)pos.y - 30, 16, MAROON);

@@ -18,7 +18,7 @@ class Customer {
 public:
     std::string id;
     std::string name;
-
+    Texture2D texture;
     int age;
     bool hasClubcard;
     bool hasCheckedCard;
@@ -55,7 +55,8 @@ public:
         bool hasClubcard,
         bool isRegular,
         CustomerArchetype archetype,
-        int maxPatience
+        int maxPatience,
+        Texture2D texture
     );
 
 
