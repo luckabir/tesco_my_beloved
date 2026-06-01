@@ -5,8 +5,6 @@ project(tesco_game LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(raylib REQUIRED)
-
 add_executable(tesco_game
     main.cpp
 
@@ -39,10 +37,9 @@ target_include_directories(tesco_game PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(tesco_game PRIVATE raylib)
-
 if (WIN32)
     target_link_libraries(tesco_game PRIVATE
+        raylib
         opengl32
         gdi32
         winmm
@@ -51,6 +48,7 @@ endif()
 
 if (UNIX AND NOT APPLE)
     target_link_libraries(tesco_game PRIVATE
+        raylib
         GL
         m
         pthread

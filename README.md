@@ -63,11 +63,9 @@ Doporučené rozložení klávesnice: QWERTZ
 ## Spuštění
 
 ```
-    mkdir -p build
-    cd build
-    cmake ..
-    cmake --build .
-    ./tesco_game
+    cmake -S . -B build
+    cmake --build build
+    ./build/tesco_game
 ```
 
 pozn. kdyby byl někdo lazy číst README, tak doufám, že se budete bavit <3
