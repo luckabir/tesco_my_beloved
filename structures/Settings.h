@@ -5,6 +5,7 @@ struct Settings {
     float volume;
     bool fullscreen;
     std::string lastLoggedInUser;
+    bool depressionMode;
 };
 
 extern Settings gameSettings;

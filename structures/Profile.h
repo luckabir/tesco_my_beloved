@@ -14,17 +14,23 @@ enum class PlayerRank
 
 struct Profile
 {
-    std::string profilePicturePath;
-    std::string nickname;
-    PlayerRank rank;
-    int employeeId;
-    int pinCode;
-    int daysUntilPasswordChange;
-    int maxScore;
-    int save_id;
-    int shiftsCompleted;
-    int customersServed;
-    int totalMoneyEarned;
+    std::string profilePicturePath = "ASSets/profile/default_avatar.png";
+    std::string nickname = "";
+    PlayerRank rank = PlayerRank::NOVACEK;
+
+    int employeeId = 0;
+    int pinCode = 0;
+    int daysUntilPasswordChange = 30;
+
+    int maxScore = 0;              // nejvic vydelano za jednu smenu
+    int save_id = 0;
+
+    int shiftsCompleted = 0;       // uspesne dokoncene smeny
+    int customersServed = 0;       // celkem odbaveno lidi
+    int totalMoneyEarned = 0;      // celkem vydelano bez vyhazovu
+
+    int currentDayStreak = 0;      // aktualni serie smen bez vyhazovu
+    int bestDayStreak = 0;         // nejdelsi serie smen bez vyhazovu
 
     std::string GetRankName() const;
     void UpdateRank();

@@ -1,4 +1,5 @@
 #include "Customer.h"
+#include "../managers/AssetManager.h"
 
 Customer::Customer(
     std::string id,
@@ -10,23 +11,24 @@ Customer::Customer(
     int maxPatience,
     Texture2D texture
 )
-    : id(id),
-      name(name),
-      texture(texture),
-      age(age),
-      hasClubcard(hasClubcard),
-      hasCheckedCard(false),
-      gaveClubcard(false),
-      cardResponse(""),
-      isRegular(isRegular),
-      archetype(archetype),
-      maxPatience(maxPatience),
-      patience((float)maxPatience),
-      mood(MOOD_NEUTRAL),
-      pos(Vector2{-100.0f, 200.0f}),
-      state(WALKING_IN),
-      speechText(""),
-      speechTimer(0.0f)
+: id(id),
+    name(name),
+    texture(texture),
+    age(age),
+    hasClubcard(hasClubcard),
+    hasCheckedCard(false),
+    gaveClubcard(false),
+    cardResponse(""),
+    isRegular(isRegular),
+    archetype(archetype),
+    maxPatience(maxPatience),
+    patience((float)maxPatience),
+    mood(MOOD_NEUTRAL),
+    pos(Vector2{-100.0f, 200.0f}),
+    state(WALKING_IN),
+    speechText(""),
+    speechTimer(0.0f),
+    hasCart(GetRandomValue(1, 100) <= 33)
 {
     if (hasClubcard && GetRandomValue(1, 100) > 70) {
         gaveClubcard = true;
@@ -146,15 +148,13 @@ void Customer::Draw() const
         DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);
     }
 
+    DrawCart();
+
     DrawText(name.c_str(), (int)pos.x, (int)pos.y - 120, 14, BLACK);
     DrawText(TextFormat("Vek %d", age), (int)pos.x + 10, (int)pos.y - 30, 16, MAROON);
 
     DrawPatienceBar();
 
-    if (gaveClubcard) {
-        DrawRectangle((int)pos.x + 70, (int)pos.y + 60, 30, 20, ORANGE);
-        DrawText("KARTA", (int)pos.x + 72, (int)pos.y + 65, 8, BLACK);
-    }
     DrawSpeechBubble();
 }
 
@@ -221,4 +221,54 @@ void Customer::DrawSpeechBubble() const
     DrawRectangle(x, y, 220, 45, Fade(RAYWHITE, 0.95f));
     DrawRectangleLines(x, y, 220, 45, DARKGRAY);
     DrawText(speechText.c_str(), x + 10, y + 15, 12, BLACK);
+}
+
+Rectangle Customer::GetCartRect() const
+{
+    const float CART_W = 180.0f;
+    const float CART_H = 125.0f;
+
+    return Rectangle{
+        pos.x + 95.0f,
+        pos.y + 210.0f,
+        CART_W,
+        CART_H
+    };
+}
+
+void Customer::DrawCart() const
+{
+    if (!hasCart) {
+        return;
+    }
+
+    Rectangle cartRect = GetCartRect();
+
+    if (AssetManager::cartTexture.id > 0) {
+        DrawTexturePro(
+            AssetManager::cartTexture,
+            Rectangle{
+                0.0f,
+                0.0f,
+                (float)AssetManager::cartTexture.width,
+                (float)AssetManager::cartTexture.height
+            },
+            cartRect,
+            Vector2{ 0.0f, 0.0f },
+            0.0f,
+            WHITE
+        );
+    } else {
+        DrawRectangleRec(cartRect, Fade(LIGHTGRAY, 0.85f));
+        DrawRectangleLines(
+            (int)cartRect.x,
+            (int)cartRect.y,
+            (int)cartRect.width,
+            (int)cartRect.height,
+            DARKGRAY
+        );
+
+        DrawCircle((int)cartRect.x + 35, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
+        DrawCircle((int)cartRect.x + 140, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
+    }
 }

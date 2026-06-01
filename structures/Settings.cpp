@@ -13,11 +13,15 @@ void SaveSettings()
     {
         file << gameSettings.volume << std::endl;
         file << gameSettings.fullscreen << std::endl;
+
         if (isUserLoggedIn) {
             file << activeProfile.nickname << std::endl;
         } else {
             file << "NONE" << std::endl;
         }
+
+        file << gameSettings.depressionMode << std::endl;
+
         file.close();
     }
 }
@@ -31,7 +35,13 @@ void LoadSettings()
         file >> gameSettings.volume;
         file >> gameSettings.fullscreen;
         file >> gameSettings.lastLoggedInUser;
+
+        if (!(file >> gameSettings.depressionMode)) {
+            gameSettings.depressionMode = false;
+        }
+
         file.close();
+
         if (gameSettings.lastLoggedInUser != "NONE" && !gameSettings.lastLoggedInUser.empty()) 
         {
             std::string filename = "profiles/profil_" + gameSettings.lastLoggedInUser + ".txt";
@@ -60,6 +70,7 @@ void LoadSettings()
         gameSettings.volume = 0.5f;
         gameSettings.fullscreen = false;
         gameSettings.lastLoggedInUser = "NONE";
+        gameSettings.depressionMode = false;
         SaveSettings();
     }
 }

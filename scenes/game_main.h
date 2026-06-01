@@ -9,6 +9,7 @@ struct ShiftData {
     int moneyEarned = 0;     
     int itemsScanned = 0;    
     int mistakesMade = 0;   
+    int customersServed = 0;
     bool wasFired = false;
 };
 

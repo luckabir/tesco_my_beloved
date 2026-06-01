@@ -6,6 +6,11 @@ static bool itemTexturePreloadFinished = false;
 Font AssetManager::mainFont = { 0 };
 Sound AssetManager::menuMusic = { 0 };
 Sound AssetManager::gameMusic = { 0 };
+Sound AssetManager::depressionMusic = { 0 };
+Texture2D AssetManager::clubcardTexture = { 0 };
+Sound AssetManager::scanSound = { 0 };
+Sound AssetManager::cardSound = { 0 };
+Texture2D AssetManager::cartTexture = { 0 };
 Sound* AssetManager::currentMusic = nullptr;
 std::vector<ItemTemplate> AssetManager::itemDatabase;
 std::map<std::string, Texture2D> AssetManager::textures;
@@ -13,15 +18,23 @@ std::map<std::string, Texture2D> AssetManager::customerTextures;
 
 void AssetManager::LoadAll(){
     mainFont = LoadFontEx("ASSets/fonts/Daydream.otf", 64, nullptr, 0);
-    menuMusic = LoadSound("ASSets/sounds/menu.wav");
-    gameMusic = LoadSound("ASSets/sounds/game.wav");
+    menuMusic = LoadSound("ASSets/sounds/menu.mp3");
+    gameMusic = LoadSound("ASSets/sounds/game.mp3");
+    depressionMusic = LoadSound("ASSets/sounds/deprese.mp3");
+    clubcardTexture = LoadTexture("ASSets/textures/karticka.png");
+    scanSound = LoadSound("ASSets/sounds/scan.mp3");
+    cardSound = LoadSound("ASSets/sounds/kartes.mp3");
+    cartTexture = LoadTexture("ASSets/textures/kosik.png");
 }
 
 void AssetManager::UnloadAll(){
     StopAllMusic();
     UnloadSound(menuMusic);
     UnloadSound(gameMusic);
+    UnloadSound(depressionMusic);
     UnloadFont(mainFont);
+    UnloadSound(scanSound);
+    UnloadSound(cardSound);
 
     for (auto const& [id, tex] : textures) {
         UnloadTexture(tex);
@@ -31,6 +44,17 @@ void AssetManager::UnloadAll(){
     for (auto const& [id, tex] : customerTextures) {
         UnloadTexture(tex);
     }
+
+    if (clubcardTexture.id > 0) {
+        UnloadTexture(clubcardTexture);
+        clubcardTexture = { 0 };
+    }
+
+    if (cartTexture.id > 0) {
+        UnloadTexture(cartTexture);
+        cartTexture = { 0 };
+    }
+
     customerTextures.clear();
 }
 
@@ -52,6 +76,9 @@ void AssetManager::SetActiveMusic(MusicType type)
     }
     else if (type == MUSIC_GAME) {
         wantedMusic = &gameMusic;
+    }
+    else if (type == MUSIC_DEPRESSION) {
+        wantedMusic = &depressionMusic;
     }
     else {
         wantedMusic = nullptr;
@@ -76,6 +103,7 @@ void AssetManager::StopAllMusic()
 {
     StopSound(menuMusic);
     StopSound(gameMusic);
+    StopSound(depressionMusic);
     currentMusic = nullptr;
 }
 
@@ -199,4 +227,18 @@ Texture2D AssetManager::GetCustomerTexture(const std::string& id)
     }
 
     return Texture2D{ 0 };
+}
+
+void AssetManager::PlayScanSound()
+{
+    if (scanSound.frameCount > 0) {
+        PlaySound(scanSound);
+    }
+}
+
+void AssetManager::PlayCardSound()
+{
+    if (cardSound.frameCount > 0) {
+        PlaySound(cardSound);
+    }
 }

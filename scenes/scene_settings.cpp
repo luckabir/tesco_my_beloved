@@ -194,31 +194,32 @@ void runSettings(GameState& currentState, InputManager& input)
     static bool isInitialized = false;
     static float tempVolume = 0.0f;
     static bool tempFullscreen = false;
+    static bool tempDepressionMode = false;
     static bool isRealistic = false; 
-
     static float backupVolume = 0.0f;
     static bool backupFullscreen = false;
+    static bool backupDepressionMode = false;
 
     if (!isInitialized) {
         tempVolume = gameSettings.volume;
         tempFullscreen = gameSettings.fullscreen;
-        
+        tempDepressionMode = gameSettings.depressionMode;
         backupVolume = gameSettings.volume;
         backupFullscreen = gameSettings.fullscreen;
-        
+        backupDepressionMode = gameSettings.depressionMode;
         isInitialized = true;
     }
 
     Rectangle screenModeButton = { 250, 160, 300, 45 };
     Rectangle volumeSliderBar  = { 250, 260, 300, 15 };
-    
+    Rectangle depressionBox = { 250, 425, 22, 22 };
     Vector2 radioClassicCenter = { 270, 350 };
     Vector2 radioRealisticCenter = { 270, 390 };
     float radioRadius = 10.0f;
 
-    Rectangle saveButton       = { 250, 450, 300, 45 };
-    Rectangle backButton       = { 250, 510, 300, 45 };
-
+    Rectangle saveButton       = { 250, 465, 300, 45 };
+    Rectangle backButton       = { 250, 520, 300, 45 };
+    
     Vector2 mousePos = GetMousePosition();
 
     float scale = fminf((float)GetScreenWidth() / 800.0f, (float)GetScreenHeight() / 600.0f);
@@ -260,10 +261,16 @@ void runSettings(GameState& currentState, InputManager& input)
         isRealistic = true;
     }
 
+    if (CheckCollisionPointRec(mousePos, depressionBox) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        tempDepressionMode = !tempDepressionMode;
+    }
+
     if (CheckCollisionPointRec(mousePos, saveButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         gameSettings.volume = tempVolume;
         gameSettings.fullscreen = tempFullscreen;
+        gameSettings.depressionMode = tempDepressionMode;
         
         SaveSettings(); 
 
@@ -289,6 +296,7 @@ void runSettings(GameState& currentState, InputManager& input)
         }
 
         SetMasterVolume(backupVolume);
+        gameSettings.depressionMode = backupDepressionMode;
 
         isInitialized = false; 
         currentState = STATE_MENU;
@@ -339,5 +347,30 @@ void runSettings(GameState& currentState, InputManager& input)
     bool hoverBack = CheckCollisionPointRec(mousePos, backButton);
     DrawRectangleRec(backButton, hoverBack ? LIGHTGRAY : GRAY);
     DrawTextEx(AssetManager::mainFont, "ZPET BEZ ULOZENI", Vector2{ backButton.x + 50, backButton.y + 14 }, 14.0f, 1.0f, BLACK);
+
+    DrawTextEx(AssetManager::mainFont, "SPECIALNI REZIM:", Vector2{ 250, 405 }, 14.0f, 1.0f, DARKGRAY);
+
+    DrawRectangleRec(depressionBox, tempDepressionMode ? RED : LIGHTGRAY);
+    DrawRectangleLines(
+        (int)depressionBox.x,
+        (int)depressionBox.y,
+        (int)depressionBox.width,
+        (int)depressionBox.height,
+        BLACK
+    );
+
+    if (tempDepressionMode) {
+        DrawText("X", (int)depressionBox.x + 5, (int)depressionBox.y + 1, 20, WHITE);
+    }
+
+    DrawTextEx(
+        AssetManager::mainFont,
+        "DEPRESE",
+        Vector2{ depressionBox.x + 35, depressionBox.y + 4 },
+        14.0f,
+        1.0f,
+        tempDepressionMode ? RED : BLACK
+    );
+
 }
 

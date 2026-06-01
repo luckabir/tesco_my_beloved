@@ -10,8 +10,8 @@ enum GameState {
     STATE_SETTINGS,
     STATE_SCORE,
     STATE_PROFILE,
-    STATE_SAVES,
     STATE_EXIT,
+    STATE_CONTROLS
 };
 
 

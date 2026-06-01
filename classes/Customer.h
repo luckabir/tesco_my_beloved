@@ -23,6 +23,7 @@ public:
     bool hasClubcard;
     bool hasCheckedCard;
     bool gaveClubcard;
+    bool hasCart;
     std::string cardResponse;
 
     bool isRegular;
@@ -71,8 +72,9 @@ public:
     void SayExitLine();
     void UpdateSpeech(float dt);
     void DrawSpeechBubble() const;
-
     const char* GetMoodText() const;
+    void DrawCart() const;
+    Rectangle GetCartRect() const;
 };
 
 #endif

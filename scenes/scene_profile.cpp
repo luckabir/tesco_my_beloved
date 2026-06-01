@@ -7,6 +7,7 @@
 #include "raylib.h"
 #include <cmath>
 #include <fstream>
+#include <cstdlib>
 
 static ProfileSubState subState = SUB_SEZNAM;
 static std::string selectedProfileName = "";
@@ -23,6 +24,22 @@ static bool errorWrongPin = false;
 static int activeTextBox = 0; 
 
 extern bool resetGameSignal;
+
+static int GetPressedDigit()
+{
+    if (IsKeyPressed(KEY_ZERO) || IsKeyPressed(KEY_KP_0)) return 0;
+    if (IsKeyPressed(KEY_ONE) || IsKeyPressed(KEY_KP_1)) return 1;
+    if (IsKeyPressed(KEY_TWO) || IsKeyPressed(KEY_KP_2)) return 2;
+    if (IsKeyPressed(KEY_THREE) || IsKeyPressed(KEY_KP_3)) return 3;
+    if (IsKeyPressed(KEY_FOUR) || IsKeyPressed(KEY_KP_4)) return 4;
+    if (IsKeyPressed(KEY_FIVE) || IsKeyPressed(KEY_KP_5)) return 5;
+    if (IsKeyPressed(KEY_SIX) || IsKeyPressed(KEY_KP_6)) return 6;
+    if (IsKeyPressed(KEY_SEVEN) || IsKeyPressed(KEY_KP_7)) return 7;
+    if (IsKeyPressed(KEY_EIGHT) || IsKeyPressed(KEY_KP_8)) return 8;
+    if (IsKeyPressed(KEY_NINE) || IsKeyPressed(KEY_KP_9)) return 9;
+
+    return -1;
+}
 
 void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused)
 {
@@ -69,10 +86,10 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
                 DrawRectangle(180, 130, 100, 100, GRAY); 
             }
 
-            DrawTextEx(AssetManager::mainFont, TextFormat("Jmeno            %s", activeProfile.nickname.c_str()), Vector2{ 310, 130 }, 16.0f, 1.0f, BLACK);
-            DrawTextEx(AssetManager::mainFont, TextFormat("Kasa ID          %04d", activeProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
-            DrawTextEx(AssetManager::mainFont, TextFormat("Pozice           %s", activeProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
-            DrawTextEx(AssetManager::mainFont, TextFormat("Trzba            %d Kc", activeProfile.maxScore), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
+            DrawTextEx(AssetManager::mainFont, TextFormat("JMENO            %s", activeProfile.nickname.c_str()), Vector2{ 310, 130 }, 16.0f, 1.0f, BLACK);
+            DrawTextEx(AssetManager::mainFont, TextFormat("KASA ID          %04d", activeProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
+            DrawTextEx(AssetManager::mainFont, TextFormat("POZICE           %s", activeProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
+            DrawTextEx(AssetManager::mainFont, TextFormat("MAX TRZBA            %d Kc", activeProfile.maxScore), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
 
             Rectangle logoutBtn = { 250, 320, 300, 45 };
             bool hoverLogout = CheckCollisionPointRec(mousePos, logoutBtn);
@@ -127,6 +144,20 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
                         file >> inspectedProfile.save_id;
                         file >> inspectedProfile.shiftsCompleted;
                         file >> inspectedProfile.customersServed;
+                        if (!(file >> inspectedProfile.totalMoneyEarned)) {
+                            inspectedProfile.totalMoneyEarned = 0;
+                            file.clear();
+                        }
+
+                        if (!(file >> inspectedProfile.currentDayStreak)) {
+                            inspectedProfile.currentDayStreak = 0;
+                            file.clear();
+                        }
+
+                        if (!(file >> inspectedProfile.bestDayStreak)) {
+                            inspectedProfile.bestDayStreak = 0;
+                            file.clear();
+                        }
                         file.close();
 
                         if (isTextureLoaded) {
@@ -138,6 +169,8 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
                     }
                     pinInput[0] = '\0'; pinLetterCount = 0; 
                     errorWrongPin = false;
+                    subState = SUB_DETAIL;
+                    activeTextBox = 3;
                     subState = SUB_DETAIL;
                 }
 
@@ -183,27 +216,54 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
             DrawTextEx(AssetManager::mainFont, "FOTO", Vector2{ 210, 170 }, 12.0f, 1.0f, WHITE);
         }
 
-        DrawTextEx(AssetManager::mainFont, TextFormat("Jmeno            %s", inspectedProfile.nickname.c_str()), Vector2{ 310, 130 }, 16.0f, 1.0f, BLACK);
-        DrawTextEx(AssetManager::mainFont, TextFormat("Kasa             %04d", inspectedProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
-        DrawTextEx(AssetManager::mainFont, TextFormat("Pozice           %s", inspectedProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
-        DrawTextEx(AssetManager::mainFont, TextFormat("Trzba            %d Kc", inspectedProfile.totalMoneyEarned), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
+        DrawTextEx(AssetManager::mainFont, TextFormat("JMENO            %s", activeProfile.nickname.c_str()), Vector2{ 310, 130 }, 16.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, TextFormat("KASA ID          %04d", activeProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
+        DrawTextEx(AssetManager::mainFont, TextFormat("POZICE           %s", activeProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
+        DrawTextEx(AssetManager::mainFont, TextFormat("MAX TRZBA            %d Kc", activeProfile.maxScore), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
 
         DrawTextEx(AssetManager::mainFont, "ZADEJTE PIN PRO VSTUP DO KASY", Vector2{ 250, 280 }, 14.0f, 1.0f, BLACK);
-        
-        char maskedPin[5] = {0};
-        for(int i=0; i<pinLetterCount; i++) maskedPin[i] = '*';
-        DrawRectangle(350, 310, 100, 35, LIGHTGRAY);
-        DrawTextEx(AssetManager::mainFont, maskedPin, Vector2{ 380, 320 }, 18.0f, 1.0f, BLACK);
 
-        int key = GetCharPressed();
-        if ((key >= '0') && (key <= '9') && (pinLetterCount < 4)) {
-            pinInput[pinLetterCount] = (char)key;
-            pinLetterCount++;
-            pinInput[pinLetterCount] = '\0';
+        Rectangle loginPinBox = { 350, 310, 100, 35 };
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (CheckCollisionPointRec(mousePos, loginPinBox)) {
+                activeTextBox = 3; 
+            }
         }
-        if (IsKeyPressed(KEY_BACKSPACE) && pinLetterCount > 0) {
-            pinLetterCount--;
-            pinInput[pinLetterCount] = '\0';
+
+        DrawRectangleRec(loginPinBox, LIGHTGRAY);
+        DrawRectangleLines(
+            (int)loginPinBox.x,
+            (int)loginPinBox.y,
+            (int)loginPinBox.width,
+            (int)loginPinBox.height,
+            activeTextBox == 3 ? BLUE : GRAY
+        );
+
+        for (int i = 0; i < pinLetterCount; i++) {
+            DrawCircle(
+                (int)(loginPinBox.x + 22 + i * 18),
+                (int)(loginPinBox.y + 18),
+                5,
+                BLACK
+            );
+        }
+
+        if (activeTextBox == 3) {
+            int digit = GetPressedDigit();
+
+            if (digit != -1 && pinLetterCount < 4) {
+                pinInput[pinLetterCount] = (char)('0' + digit);
+                pinLetterCount++;
+                pinInput[pinLetterCount] = '\0';
+                errorWrongPin = false;
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE) && pinLetterCount > 0) {
+                pinLetterCount--;
+                pinInput[pinLetterCount] = '\0';
+                errorWrongPin = false;
+            }
         }
 
         if (errorWrongPin) {
@@ -306,20 +366,12 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
             }
         }
 
-        DrawTextEx(AssetManager::mainFont, "PROFILOVY OBRAZEK", Vector2{ 250, 350 }, 14.0f, 1.0f, DARKGRAY);
-        Rectangle filePhotoBtn = { 250, 380, 300, 35 };
-        DrawRectangleRec(filePhotoBtn, CheckCollisionPointRec(mousePos, filePhotoBtn) ? LIGHTGRAY : GRAY);
-        DrawTextEx(AssetManager::mainFont, "Vybrat rucne ze souboru", Vector2{ filePhotoBtn.x + 40, filePhotoBtn.y + 10 }, 12.0f, 1.0f, WHITE);
-        
-        if (CheckCollisionPointRec(mousePos, filePhotoBtn) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            activeProfile.profilePicturePath = "ASSets/profile/default_avatar.png";
-        }
 
         Rectangle finalizeBtn = { 250, 460, 300, 45 };
         bool canFinalize = (nameLetterCount > 0 && pinLetterCount == 4);
         
         DrawRectangleRec(finalizeBtn, canFinalize ? (CheckCollisionPointRec(mousePos, finalizeBtn) ? LIME : GREEN) : GRAY);
-        DrawTextEx(AssetManager::mainFont, "PODPISAT SMLOUVU", Vector2{ finalizeBtn.x + 45, finalizeBtn.y + 14 }, 14.0f, 1.0f, WHITE);
+        DrawTextEx(AssetManager::mainFont, "PODEPSAT SMLOUVU", Vector2{ finalizeBtn.x + 45, finalizeBtn.y + 14 }, 14.0f, 1.0f, WHITE);
 
         if (canFinalize && CheckCollisionPointRec(mousePos, finalizeBtn) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {

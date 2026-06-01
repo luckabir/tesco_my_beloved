@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstdlib> 
 #include <algorithm>
+#include <filesystem>
 
 Profile activeProfile;
 bool isUserLoggedIn = false;
@@ -40,6 +41,7 @@ void Profile::UpdateRank()
 
 void CreateProfile(const std::string& profileName, int pin)
 {
+    std::filesystem::create_directories("profiles");
     activeProfile.nickname = profileName;
     activeProfile.pinCode = pin;
     activeProfile.employeeId = 1000 + (rand() % 9000); 
@@ -51,6 +53,8 @@ void CreateProfile(const std::string& profileName, int pin)
     activeProfile.rank = PlayerRank::NOVACEK;
     activeProfile.save_id = 0;
     activeProfile.totalMoneyEarned = 0;
+    activeProfile.currentDayStreak = 0;
+    activeProfile.bestDayStreak = 0;
 
     isUserLoggedIn = true;
     SaveProfile();
@@ -87,7 +91,18 @@ bool LoadProfile(const std::string& profileName, int enteredPin){
         file >> temp.shiftsCompleted;
         file >> temp.customersServed;
         file >> temp.totalMoneyEarned;
+        if (!(file >> temp.currentDayStreak)) {
+            temp.currentDayStreak = 0;
+            file.clear();
+        }
+
+        if (!(file >> temp.bestDayStreak)) {
+            temp.bestDayStreak = 0;
+            file.clear();
+        }
+
         file.close();
+
 
         if (temp.pinCode == enteredPin){
             activeProfile = temp;
@@ -155,6 +170,8 @@ void SaveProfile(){
         file << activeProfile.shiftsCompleted << "\n";
         file << activeProfile.customersServed << "\n";
         file << activeProfile.totalMoneyEarned << "\n";
+        file << activeProfile.currentDayStreak << "\n";
+        file << activeProfile.bestDayStreak << "\n";
         file.close();
     }
 }

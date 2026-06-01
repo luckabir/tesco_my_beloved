@@ -8,9 +8,9 @@
 #include "scenes/game_main.h"
 #include "scenes/scene_menu.h"
 #include "scenes/scene_profile.h"
-#include "scenes/scene_saves.h"
 #include "scenes/scene_score.h"
 #include "scenes/scene_settings.h"
+#include "scenes/scene_controls.h"
 #include <cmath>
 
 int main() {
@@ -64,7 +64,18 @@ int main() {
 
         if (videoPlaying) {
             AssetManager::SetActiveMusic(MUSIC_NONE);
-        }else if (currentState == STATE_INTRO || currentState == STATE_MENU || currentState == STATE_SETTINGS || currentState == STATE_PROFILE || currentState == STATE_SCORE || currentState == STATE_SAVES){
+        }
+        else if (gameSettings.depressionMode) {
+            AssetManager::SetActiveMusic(MUSIC_DEPRESSION);
+        }
+        else if (
+            currentState == STATE_INTRO ||
+            currentState == STATE_MENU ||
+            currentState == STATE_SETTINGS ||
+            currentState == STATE_PROFILE ||
+            currentState == STATE_SCORE ||
+            currentState == STATE_CONTROLS
+        ){
             AssetManager::SetActiveMusic(MUSIC_MENU);
         }
         else if (currentState == STATE_PLAYING){
@@ -75,8 +86,7 @@ int main() {
             }
         }
 
-                AssetManager::UpdateAudio();
-
+        AssetManager::UpdateAudio();
 
         if (currentState != lastState) {
             switch (currentState) {
@@ -103,8 +113,8 @@ int main() {
                 case STATE_PROFILE:
                     strcpy(title, "ANONYMNI REZIM");
                     break;
-                case STATE_SAVES:
-                    strcpy(title, "TOHLE JE NA TOM LIP JAK MOJE STUDIUM");
+                case STATE_CONTROLS:
+                    strcpy(title, "MANUAL K POKLADNE");
                     break;
             }
             SetWindowTitle(title);
@@ -127,21 +137,20 @@ int main() {
             case STATE_SETTINGS:
                 runSettings(currentState, input);
                 break;
-            case STATE_SAVES:
-                runSaves(currentState, input);
-                break;
             case STATE_PROFILE:
                 runProfile(currentState, input, isGamePaused);
                 break;
             case STATE_SCORE:
                 runScore(currentState, input);
                 break;
+            case STATE_CONTROLS:
+                runControls(currentState, input);
+                break;
             default:
                 break;
         }
 
-        if (currentState != STATE_INTRO && currentState != STATE_EXIT) {
-            extern bool videoPlaying; 
+    if (currentState != STATE_INTRO && currentState != STATE_EXIT && currentState != STATE_PLAYING) {            extern bool videoPlaying; 
             if (!videoPlaying) {
                 std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
                 Color textColor = isUserLoggedIn ? GREEN : RED;

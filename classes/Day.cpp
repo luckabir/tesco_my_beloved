@@ -2,7 +2,7 @@
 
 float Day::TimeLimit()
 {
-    return 120.0f;
+    return 60.0f;
 }
 
 void Day::ResetShiftStats(ShiftData& shift)
