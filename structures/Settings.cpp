@@ -2,26 +2,20 @@
 #include "Profile.h"
 #include <fstream>
 
-
 Settings gameSettings;
 
 void SaveSettings()
 {
     std::ofstream file("settings.txt");
-
-    if (file.is_open())
-    {
+    if (file.is_open()){
         file << gameSettings.volume << std::endl;
         file << gameSettings.fullscreen << std::endl;
-
         if (isUserLoggedIn) {
             file << activeProfile.nickname << std::endl;
         } else {
             file << "NONE" << std::endl;
         }
-
         file << gameSettings.depressionMode << std::endl;
-
         file.close();
     }
 }
@@ -30,8 +24,7 @@ void LoadSettings()
 {
     std::ifstream file("settings.txt");
 
-    if (file.is_open())
-    {
+    if (file.is_open()){
         file >> gameSettings.volume;
         file >> gameSettings.fullscreen;
         file >> gameSettings.lastLoggedInUser;
@@ -42,12 +35,10 @@ void LoadSettings()
 
         file.close();
 
-        if (gameSettings.lastLoggedInUser != "NONE" && !gameSettings.lastLoggedInUser.empty()) 
-        {
+        if (gameSettings.lastLoggedInUser != "NONE" && !gameSettings.lastLoggedInUser.empty()) {
             std::string filename = "profiles/profil_" + gameSettings.lastLoggedInUser + ".txt";
             std::ifstream profFile(filename);
-            if (profFile.is_open()) 
-            {
+            if (profFile.is_open()) {
                 int rankAsInt;
                 profFile >> activeProfile.profilePicturePath;
                 profFile >> activeProfile.nickname;
@@ -64,9 +55,7 @@ void LoadSettings()
                 isUserLoggedIn = true; 
             }
         }
-    }
-    else
-    {
+    }else{
         gameSettings.volume = 0.5f;
         gameSettings.fullscreen = false;
         gameSettings.lastLoggedInUser = "NONE";

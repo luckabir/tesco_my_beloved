@@ -3,7 +3,6 @@
 #include "managers/AssetManager.h"
 #include "structures/Settings.h"
 #include "structures/Profile.h"
-#include <string.h>
 #include "scenes/scene_intro.h"
 #include "scenes/game_main.h"
 #include "scenes/scene_menu.h"
@@ -12,6 +11,8 @@
 #include "scenes/scene_settings.h"
 #include "scenes/scene_controls.h"
 #include <cmath>
+#include <string.h>
+
 
 int main() {
     const int virtualWidth = 800;
@@ -49,33 +50,21 @@ int main() {
 
         input.Update();
         extern bool videoPlaying;
-
         float frameTime = GetFrameTime();
-
         static float debugRuntime = 0.0f;
         debugRuntime += frameTime;
-
         if (debugRuntime > 2.0f && currentState == STATE_PLAYING && frameTime > 0.08f) {
             TraceLog(LOG_WARNING, "GAMEPLAY FRAME SPIKE: %.3f seconds, videoPlaying=%d",
                 frameTime,
                 videoPlaying
             );
         }
-
         if (videoPlaying) {
             AssetManager::SetActiveMusic(MUSIC_NONE);
         }
         else if (gameSettings.depressionMode) {
             AssetManager::SetActiveMusic(MUSIC_DEPRESSION);
-        }
-        else if (
-            currentState == STATE_INTRO ||
-            currentState == STATE_MENU ||
-            currentState == STATE_SETTINGS ||
-            currentState == STATE_PROFILE ||
-            currentState == STATE_SCORE ||
-            currentState == STATE_CONTROLS
-        ){
+        }else if (currentState == STATE_INTRO || currentState == STATE_MENU || currentState == STATE_SETTINGS || currentState == STATE_PROFILE || currentState == STATE_SCORE || currentState == STATE_CONTROLS){
             AssetManager::SetActiveMusic(MUSIC_MENU);
         }
         else if (currentState == STATE_PLAYING){
@@ -150,7 +139,7 @@ int main() {
                 break;
         }
 
-    if (currentState != STATE_INTRO && currentState != STATE_EXIT && currentState != STATE_PLAYING) {            extern bool videoPlaying; 
+        if (currentState != STATE_INTRO && currentState != STATE_EXIT && currentState != STATE_PLAYING) {            extern bool videoPlaying; 
             if (!videoPlaying) {
                 std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
                 Color textColor = isUserLoggedIn ? GREEN : RED;
@@ -163,29 +152,19 @@ int main() {
 
         EndTextureMode();
 
-
         BeginDrawing();
             ClearBackground(BLACK); 
-
             float scale = fminf((float)GetScreenWidth() / virtualWidth, (float)GetScreenHeight() / virtualHeight);
-
             DrawTexturePro(
                 target.texture,
-                Rectangle{ 0.0f, 0.0f, (float)target.texture.width, (float)-target.texture.height },
-                Rectangle{ 
-                    ((float)GetScreenWidth() - ((float)virtualWidth * scale)) * 0.5f,
-                    ((float)GetScreenHeight() - ((float)virtualHeight * scale)) * 0.5f,
-                    (float)virtualWidth * scale,
-                    (float)virtualHeight * scale
-                },
+                Rectangle{0.0f, 0.0f, (float)target.texture.width, (float)-target.texture.height },
+                Rectangle{((float)GetScreenWidth() - ((float)virtualWidth * scale)) * 0.5f, ((float)GetScreenHeight() - ((float)virtualHeight * scale)) * 0.5f, (float)virtualWidth * scale, (float)virtualHeight * scale},
                 Vector2{ 0, 0 },
                 0.0f,
                 WHITE
             );
-
         EndDrawing();
     }
-
     UnloadRenderTexture(target);
     AssetManager::UnloadAll();
     CloseAudioDevice();

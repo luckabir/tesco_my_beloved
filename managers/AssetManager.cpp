@@ -58,8 +58,7 @@ void AssetManager::UnloadAll(){
     customerTextures.clear();
 }
 
-void AssetManager::UpdateAudio()
-{
+void AssetManager::UpdateAudio(){
     if (currentMusic != nullptr) {
         if (!IsSoundPlaying(*currentMusic)) {
             PlaySound(*currentMusic);
@@ -67,8 +66,7 @@ void AssetManager::UpdateAudio()
     }
 }
 
-void AssetManager::SetActiveMusic(MusicType type)
-{
+void AssetManager::SetActiveMusic(MusicType type){
     Sound* wantedMusic = nullptr;
 
     if (type == MUSIC_MENU) {
@@ -83,24 +81,19 @@ void AssetManager::SetActiveMusic(MusicType type)
     else {
         wantedMusic = nullptr;
     }
-
     if (currentMusic == wantedMusic) {
         return;
     }
-
     if (currentMusic != nullptr) {
         StopSound(*currentMusic);
     }
-
     currentMusic = wantedMusic;
-
     if (currentMusic != nullptr) {
         PlaySound(*currentMusic);
     }
 }
 
-void AssetManager::StopAllMusic()
-{
+void AssetManager::StopAllMusic(){
     StopSound(menuMusic);
     StopSound(gameMusic);
     StopSound(depressionMusic);
@@ -154,8 +147,7 @@ ItemTemplate AssetManager::GetRandomItemTemplate() {
     return itemDatabase[randomIndex];
 }
 
-Texture2D AssetManager::GetTexture(const std::string& id)
-{
+Texture2D AssetManager::GetTexture(const std::string& id){
     auto it = textures.find(id);
     if (it != textures.end()) {
         return it->second;
@@ -176,8 +168,7 @@ Texture2D AssetManager::GetTexture(const std::string& id)
     return tex;
 }
 
-void AssetManager::PreloadItemTextures()
-{
+void AssetManager::PreloadItemTextures(){
     itemTexturePreloadFinished = false;
 
     for (const ItemTemplate& item : itemDatabase) {
@@ -207,7 +198,6 @@ void AssetManager::PreloadCustomerTextures()
     customerTextures["doctor10"] = LoadTexture("ASSets/textures/customers/10th_doc.png");
     customerTextures["chloe_price"] = LoadTexture("ASSets/textures/customers/chloe.png");
     customerTextures["big_krtkus"] = LoadTexture("ASSets/textures/customers/krtkus.png");
-
     customerTextures["honza_tuna"] = LoadTexture("ASSets/textures/customers/tuna.png");
     customerTextures["honza_spacek"] = LoadTexture("ASSets/textures/customers/spacek.png");
     customerTextures["sugar_denny"] = LoadTexture("ASSets/textures/customers/denny.png");

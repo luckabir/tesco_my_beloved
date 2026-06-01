@@ -110,28 +110,13 @@ static void DrawScoreTable(
         });
     }
 
-    DrawTextEx(
-        AssetManager::mainFont,
-        title,
-        Vector2{ (float)x, (float)y },
-        15.0f,
-        1.0f,
-        BLACK
-    );
+    DrawTextEx(AssetManager::mainFont, title, Vector2{ (float)x, (float)y }, 15.0f, 1.0f, BLACK);
 
     DrawRectangle(x, y + 30, 230, 260, LIGHTGRAY);
     DrawRectangleLines(x, y + 30, 230, 260, DARKGRAY);
 
     if (rows.empty()) {
-        DrawTextEx(
-            AssetManager::mainFont,
-            "Zadne vysledky",
-            Vector2{ (float)x + 20, (float)y + 80 },
-            12.0f,
-            1.0f,
-            DARKGRAY
-        );
-
+        DrawTextEx(AssetManager::mainFont,"Zadne vysledky", Vector2{ (float)x + 20, (float)y + 80 },12.0f,1.0f,DARKGRAY);
         return;
     }
 
@@ -139,7 +124,6 @@ static void DrawScoreTable(
 
     for (int i = 0; i < maxRows; i++) {
         const ScoreRow& row = rows[i];
-
         int value = 0;
         std::string suffix;
 
@@ -150,31 +134,12 @@ static void DrawScoreTable(
             value = row.bestStreak;
             suffix = " dni";
         }
-
         Color valueColor = (i == 0) ? RED : BLUE;
-
         std::string namePart = std::to_string(i + 1) + ". " + row.nickname;
         std::string valuePart = std::to_string(value) + suffix;
-
         float rowY = (float)y + 65 + i * 38.0f;
-
-        DrawTextEx(
-            AssetManager::mainFont,
-            namePart.c_str(),
-            Vector2{ (float)x + 12, rowY },
-            12.0f,
-            1.0f,
-            BLACK
-        );
-
-        DrawTextEx(
-            AssetManager::mainFont,
-            valuePart.c_str(),
-            Vector2{ (float)x + 135, rowY },
-            12.0f,
-            1.0f,
-            valueColor
-        );
+        DrawTextEx(AssetManager::mainFont, namePart.c_str(), Vector2{ (float)x + 12, rowY }, 12.0f, 1.0f, BLACK);
+        DrawTextEx(AssetManager::mainFont, valuePart.c_str(), Vector2{ (float)x + 135, rowY }, 12.0f, 1.0f, valueColor);
     }
 }
 
@@ -196,74 +161,26 @@ void runScore(GameState &currentState, InputManager &input)
     mousePos.y = (mousePos.y - ((float)GetScreenHeight() - (600.0f * scale)) * 0.5f) / scale;
 
     ClearBackground(RAYWHITE);
-
     std::vector<ScoreRow> rows = LoadScoreRows();
-
-    DrawTextEx(
-        AssetManager::mainFont,
-        "STATISTIKY PROFILU",
-        Vector2{ 205, 45 },
-        22.0f,
-        1.0f,
-        BLACK
-    );
-
-    DrawScoreTable(
-        "NEJVIC ZA DEN",
-        rows,
-        140,
-        115,
-        0
-    );
-
-    DrawScoreTable(
-        "NEJVIC DNI",
-        rows,
-        430,
-        115,
-        1
-    );
+    DrawTextEx(AssetManager::mainFont, "STATISTIKY PROFILU", Vector2{ 205, 45 }, 22.0f, 1.0f, BLACK);
+    DrawScoreTable("NEJVIC ZA DEN", rows, 140, 115, 0);
+    DrawScoreTable("NEJVIC DNI", rows, 430, 115, 1);
 
     if (isUserLoggedIn) {
         DrawRectangle(115, 430, 570, 70, Fade(SKYBLUE, 0.35f));
         DrawRectangleLines(115, 430, 570, 70, DARKBLUE);
 
-        DrawTextEx(
-            AssetManager::mainFont,
-            TextFormat("Tvuj profil: %s", activeProfile.nickname.c_str()),
-            Vector2{ 140, 445 },
-            12.0f,
-            1.0f,
-            BLACK
-        );
+        DrawTextEx(AssetManager::mainFont, TextFormat("Tvuj profil %s", activeProfile.nickname.c_str()), Vector2{ 140, 445 }, 12.0f, 1.0f, BLACK);
 
-        DrawTextEx(
-            AssetManager::mainFont,
-            TextFormat(
-                "Nejvic za den: %d Kc   Nejvic dni: %d",
-                activeProfile.maxScore,
-                activeProfile.bestDayStreak
-            ),
-            Vector2{ 140, 472 },
-            11.0f,
-            1.0f,
-            DARKGRAY
-        );
+        DrawTextEx(AssetManager::mainFont,
+            TextFormat("Nejvic za den %d Kc   Nejvic dni %d", activeProfile.maxScore, activeProfile.bestDayStreak), Vector2{ 140, 472 }, 11.0f, 1.0f, DARKGRAY);
     }
 
     Rectangle backBtn = { 250, 530, 300, 40 };
     bool hoverBack = CheckCollisionPointRec(mousePos, backBtn);
-
     DrawRectangleRec(backBtn, hoverBack ? BLUE : DARKBLUE);
 
-    DrawTextEx(
-        AssetManager::mainFont,
-        "ZPET DO MENU",
-        Vector2{ backBtn.x + 85, backBtn.y + 12 },
-        14.0f,
-        1.0f,
-        WHITE
-    );
+    DrawTextEx(AssetManager::mainFont, "ZPET DO MENU", Vector2{ backBtn.x + 85, backBtn.y + 12 }, 14.0f, 1.0f, WHITE);
 
     if (hoverBack && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         currentState = STATE_MENU;

@@ -1,7 +1,7 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-#include "../../managers/AssetManager.h"
+#include "../managers/AssetManager.h"
 #include "raylib.h"
 #include <string>
 
@@ -16,26 +16,14 @@ public:
     bool isScanned;
     bool missedPenaltyGiven;
     ItemCategory category;
-
     float drawWidth;
     float drawHeight;
 
-    Item(
-        std::string n,
-        int p,
-        int cp,
-        Texture2D tex,
-        Color fallback,
-        Vector2 startPos,
-        ItemCategory cat = NORMAL
-    );
-
+    Item(std::string n, int p, int cp, Texture2D tex, Color fallback, Vector2 startPos, ItemCategory cat = NORMAL);
     virtual ~Item() = default;
-
     void CalculateDrawSize();
     Rectangle getRect() const;
     void Draw();
-
     virtual bool requiresSpecialAction();
 };
 

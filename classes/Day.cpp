@@ -1,12 +1,10 @@
 #include "Day.h"
 
-float Day::TimeLimit()
-{
-    return 60.0f;
+float Day::TimeLimit(){
+    return 180.0f;
 }
 
-void Day::ResetShiftStats(ShiftData& shift)
-{
+void Day::ResetShiftStats(ShiftData& shift){
     shift.moneyEarned = 0;
     shift.itemsScanned = 0;
     shift.mistakesMade = 0;

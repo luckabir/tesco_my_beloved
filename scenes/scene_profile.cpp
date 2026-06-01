@@ -12,17 +12,14 @@
 static ProfileSubState subState = SUB_SEZNAM;
 static std::string selectedProfileName = "";
 static Profile inspectedProfile; 
-
 static Texture2D profileTexture = { 0 };
 static bool isTextureLoaded = false;
-
 static char nameInput[16] = "\0";
 static char pinInput[5] = "\0";
 static int nameLetterCount = 0;
 static int pinLetterCount = 0;
 static bool errorWrongPin = false;
 static int activeTextBox = 0; 
-
 extern bool resetGameSignal;
 
 static int GetPressedDigit()
@@ -112,7 +109,6 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
         else 
         {
             DrawTextEx(AssetManager::mainFont, "KARTA ZAMESTNANCU", Vector2{ 220, 50 }, 22.0f, 1.0f, BLACK);
-
             int startY = 130;
             for (size_t i = 0; i < allProfiles.size(); i++)
             {
@@ -205,12 +201,7 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
         DrawTextEx(AssetManager::mainFont, "PROFIL ZAMESTNANCE", Vector2{ 280, 50 }, 22.0f, 1.0f, BLACK);
 
         if (isTextureLoaded && profileTexture.id > 0) {
-            DrawTexturePro(
-                profileTexture, 
-                Rectangle{ 0, 0, (float)profileTexture.width, (float)profileTexture.height },
-                Rectangle{ 180, 130, 100, 100 }, 
-                Vector2{ 0, 0 }, 0.0f, WHITE
-            );
+            DrawTexturePro( profileTexture, Rectangle{ 0, 0, (float)profileTexture.width, (float)profileTexture.height }, Rectangle{ 180, 130, 100, 100 },  Vector2{ 0, 0 }, 0.0f, WHITE);
         } else {
             DrawRectangle(180, 130, 100, 100, GRAY); 
             DrawTextEx(AssetManager::mainFont, "FOTO", Vector2{ 210, 170 }, 12.0f, 1.0f, WHITE);
@@ -220,7 +211,6 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
         DrawTextEx(AssetManager::mainFont, TextFormat("KASA ID          %04d", activeProfile.employeeId), Vector2{ 310, 155 }, 14.0f, 1.0f, DARKGRAY);
         DrawTextEx(AssetManager::mainFont, TextFormat("POZICE           %s", activeProfile.GetRankName().c_str()), Vector2{ 310, 180 }, 14.0f, 1.0f, RED);
         DrawTextEx(AssetManager::mainFont, TextFormat("MAX TRZBA            %d Kc", activeProfile.maxScore), Vector2{ 310, 205 }, 14.0f, 1.0f, GOLD);
-
         DrawTextEx(AssetManager::mainFont, "ZADEJTE PIN PRO VSTUP DO KASY", Vector2{ 250, 280 }, 14.0f, 1.0f, BLACK);
 
         Rectangle loginPinBox = { 350, 310, 100, 35 };
@@ -232,33 +222,20 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
         }
 
         DrawRectangleRec(loginPinBox, LIGHTGRAY);
-        DrawRectangleLines(
-            (int)loginPinBox.x,
-            (int)loginPinBox.y,
-            (int)loginPinBox.width,
-            (int)loginPinBox.height,
-            activeTextBox == 3 ? BLUE : GRAY
-        );
+        DrawRectangleLines( (int)loginPinBox.x, (int)loginPinBox.y, (int)loginPinBox.width, (int)loginPinBox.height, activeTextBox == 3 ? BLUE : GRAY);
 
         for (int i = 0; i < pinLetterCount; i++) {
-            DrawCircle(
-                (int)(loginPinBox.x + 22 + i * 18),
-                (int)(loginPinBox.y + 18),
-                5,
-                BLACK
-            );
+            DrawCircle((int)(loginPinBox.x + 22 + i * 18), (int)(loginPinBox.y + 18), 5, BLACK);
         }
 
         if (activeTextBox == 3) {
             int digit = GetPressedDigit();
-
             if (digit != -1 && pinLetterCount < 4) {
                 pinInput[pinLetterCount] = (char)('0' + digit);
                 pinLetterCount++;
                 pinInput[pinLetterCount] = '\0';
                 errorWrongPin = false;
             }
-
             if (IsKeyPressed(KEY_BACKSPACE) && pinLetterCount > 0) {
                 pinLetterCount--;
                 pinInput[pinLetterCount] = '\0';

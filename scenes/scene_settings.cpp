@@ -76,7 +76,7 @@ static bool StartRealisticVideo()
         return false;
     }
 
-    plm_set_audio_enabled(plm, FALSE); // audio z videa nepotřebuješ
+    plm_set_audio_enabled(plm, FALSE); 
     videoPlaying = true;
     timeAccumulator = 0.0f;
 
@@ -142,7 +142,6 @@ static bool UpdateRealisticVideo()
 
     timeAccumulator += dt;
 
-    // kdyz se hra sekne, zahodime backlog
     if (timeAccumulator > frameDuration * 2.0) {
         timeAccumulator = frameDuration;
     }
@@ -171,14 +170,7 @@ static bool UpdateRealisticVideo()
 
         rlActiveTextureSlot(0);
 
-        DrawTexturePro(
-            yTexture,
-            Rectangle{ 0, 0, (float)yTexture.width, (float)yTexture.height },
-            Rectangle{ 0, 0, 800, 600 },
-            Vector2{ 0, 0 },
-            0.0f,
-            WHITE
-        );
+        DrawTexturePro(yTexture, Rectangle{ 0, 0, (float)yTexture.width, (float)yTexture.height }, Rectangle{ 0, 0, 800, 600 }, Vector2{ 0, 0 }, 0.0f, WHITE);
     EndShaderMode();
 
     if (plm_has_ended(plm)) {
@@ -217,8 +209,8 @@ void runSettings(GameState& currentState, InputManager& input)
     Vector2 radioRealisticCenter = { 270, 390 };
     float radioRadius = 10.0f;
 
-    Rectangle saveButton       = { 250, 465, 300, 45 };
-    Rectangle backButton       = { 250, 520, 300, 45 };
+    Rectangle saveButton = { 250, 465, 300, 45 };
+    Rectangle backButton = { 250, 520, 300, 45 };
     
     Vector2 mousePos = GetMousePosition();
 
@@ -228,50 +220,41 @@ void runSettings(GameState& currentState, InputManager& input)
 
     if (videoPlaying) {
         bool videoEnded = UpdateRealisticVideo();
-
         if (videoEnded) {
             isInitialized = false;
             currentState = STATE_EXIT;
         }
-
         return;
     }
 
-    if (CheckCollisionPointRec(mousePos, screenModeButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
+    if (CheckCollisionPointRec(mousePos, screenModeButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         tempFullscreen = !tempFullscreen;
-        
         ToggleFullscreen();
     }
 
-    if (CheckCollisionPointRec(mousePos, volumeSliderBar) && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-    {
+    if (CheckCollisionPointRec(mousePos, volumeSliderBar) && IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
         tempVolume = (mousePos.x - volumeSliderBar.x) / volumeSliderBar.width;
         if (tempVolume < 0.0f) tempVolume = 0.0f;
         if (tempVolume > 1.0f) tempVolume = 1.0f;
         SetMasterVolume(tempVolume);
     }
 
-    if (CheckCollisionPointCircle(mousePos, radioClassicCenter, radioRadius) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
+    if (CheckCollisionPointCircle(mousePos, radioClassicCenter, radioRadius) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         isRealistic = false;
     }
-    if (CheckCollisionPointCircle(mousePos, radioRealisticCenter, radioRadius) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
+
+    if (CheckCollisionPointCircle(mousePos, radioRealisticCenter, radioRadius) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         isRealistic = true;
     }
 
-    if (CheckCollisionPointRec(mousePos, depressionBox) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
+    if (CheckCollisionPointRec(mousePos, depressionBox) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         tempDepressionMode = !tempDepressionMode;
     }
 
-    if (CheckCollisionPointRec(mousePos, saveButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
+    if (CheckCollisionPointRec(mousePos, saveButton) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
         gameSettings.volume = tempVolume;
         gameSettings.fullscreen = tempFullscreen;
         gameSettings.depressionMode = tempDepressionMode;
-        
         SaveSettings(); 
 
         if (isRealistic) {
@@ -279,7 +262,6 @@ void runSettings(GameState& currentState, InputManager& input)
                 isInitialized = false;
                 currentState = STATE_MENU;
             }
-
             return;
         } else {
             isInitialized = false;
@@ -304,9 +286,9 @@ void runSettings(GameState& currentState, InputManager& input)
     }
 
     DrawTextEx(AssetManager::mainFont, "NASTAVENI", Vector2{ 310, 60 }, 30.0f, 2.0f, BLACK);
-
-    DrawTextEx(AssetManager::mainFont, "REZIM OBRAZOVKY:", Vector2{ 250, 130 }, 16.0f, 1.0f, DARKGRAY);
+    DrawTextEx(AssetManager::mainFont, "REZIM OBRAZOVKY", Vector2{ 250, 130 }, 16.0f, 1.0f, DARKGRAY);
     DrawRectangleRec(screenModeButton, CheckCollisionPointRec(mousePos, screenModeButton) ? LIGHTGRAY : GRAY);
+   
     if (tempFullscreen) {
         DrawTextEx(AssetManager::mainFont, "CELA OBRAZOVKA", Vector2{ screenModeButton.x + 45, screenModeButton.y + 14 }, 14.0f, 1.0f, BLACK);
     } else {
@@ -348,29 +330,16 @@ void runSettings(GameState& currentState, InputManager& input)
     DrawRectangleRec(backButton, hoverBack ? LIGHTGRAY : GRAY);
     DrawTextEx(AssetManager::mainFont, "ZPET BEZ ULOZENI", Vector2{ backButton.x + 50, backButton.y + 14 }, 14.0f, 1.0f, BLACK);
 
-    DrawTextEx(AssetManager::mainFont, "SPECIALNI REZIM:", Vector2{ 250, 405 }, 14.0f, 1.0f, DARKGRAY);
+    DrawTextEx(AssetManager::mainFont, "SPECIALNI REZIM", Vector2{ 250, 405 }, 14.0f, 1.0f, DARKGRAY);
 
     DrawRectangleRec(depressionBox, tempDepressionMode ? RED : LIGHTGRAY);
-    DrawRectangleLines(
-        (int)depressionBox.x,
-        (int)depressionBox.y,
-        (int)depressionBox.width,
-        (int)depressionBox.height,
-        BLACK
-    );
+    DrawRectangleLines((int)depressionBox.x,(int)depressionBox.y, (int)depressionBox.width,(int)depressionBox.height,BLACK);
 
     if (tempDepressionMode) {
         DrawText("X", (int)depressionBox.x + 5, (int)depressionBox.y + 1, 20, WHITE);
     }
 
-    DrawTextEx(
-        AssetManager::mainFont,
-        "DEPRESE",
-        Vector2{ depressionBox.x + 35, depressionBox.y + 4 },
-        14.0f,
-        1.0f,
-        tempDepressionMode ? RED : BLACK
-    );
+    DrawTextEx(AssetManager::mainFont, "DEPRESE", Vector2{ depressionBox.x + 35, depressionBox.y + 4 }, 14.0f, 1.0f, tempDepressionMode ? RED : BLACK);
 
 }
 

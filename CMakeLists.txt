@@ -7,28 +7,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(tesco_game
     main.cpp
-
     classes/Customer.cpp
     classes/Day.cpp
     classes/Player.cpp
-    classes/items/Item.cpp
-
+    classes/Item.cpp
     managers/CustomerManager.cpp
     managers/InputManager.cpp
     managers/AssetManager.cpp
-
     scenes/game_main.cpp
     scenes/game/scene_calendar.cpp
     scenes/game/scene_game.cpp
     scenes/game/scene_stats.cpp
-
     scenes/scene_menu.cpp
     scenes/scene_settings.cpp
     scenes/scene_score.cpp
     scenes/scene_profile.cpp
     scenes/scene_intro.cpp
     scenes/scene_controls.cpp
-
     structures/Settings.cpp
     structures/Profile.cpp
 )

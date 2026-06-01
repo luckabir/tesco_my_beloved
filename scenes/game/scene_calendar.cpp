@@ -14,7 +14,6 @@ void runCalendarScene(GameState &currentState, InputManager &input) {
 
     ClearBackground(RAYWHITE);
 
-    // Sync current day with the player profile
     if (isUserLoggedIn) {
         currentShift.currentDay = activeProfile.shiftsCompleted + 1;
     }
@@ -42,15 +41,14 @@ void runCalendarScene(GameState &currentState, InputManager &input) {
 
     // Input processing
     if (hoverStart && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        // Reset counters for the new shift
         Day::ResetShiftStats(currentShift);
         currentShift.customersServed = 0;
-        resetGameSignal = true;          // Let scene_game.cpp know it should re-initialize
-        currentSubState = SUB_PLAYING_CASHIER; // Switch sub-state directly
+        resetGameSignal = true;         
+        currentSubState = SUB_PLAYING_CASHIER; 
         return;
     }
 
     if (hoverBack && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        currentState = STATE_MENU;       // Return to main menu via main state machine
+        currentState = STATE_MENU;     
     }
 }

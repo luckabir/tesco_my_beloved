@@ -11,16 +11,47 @@ std::vector<std::string> allProfiles;
 
 std::string Profile::GetRankName() const
 {
-    switch (rank)
-    {
+    switch (rank) {
         case PlayerRank::NOVACEK:
             return "Uplny novacek";
         case PlayerRank::ZAUCENY_BRIGADNIK:
             return "Zauceny brigadnik";
+        case PlayerRank::JUNIOR_POKLADNI:
+            return "Junior pokladni";
         case PlayerRank::POKROCILY_POKLADNI:
             return "Pokrocily pokladni";
+        case PlayerRank::RYCHLA_RUKA:
+            return "Rychla ruka";
         case PlayerRank::EXPERT_NA_PECIVO:
             return "Expert na pecivo";
+        case PlayerRank::HLIDAC_CLUBCARD:
+            return "Hlidac Clubcard";
+        case PlayerRank::LOVEC_SLEV:
+            return "Lovec slev";
+        case PlayerRank::MISTR_MARKOVANI:
+            return "Mistr markovani";
+        case PlayerRank::OCHRANCE_PASU:
+            return "Ochrance pasu";
+        case PlayerRank::SPECIALISTA_NA_FRONTY:
+            return "Specialista na fronty";
+        case PlayerRank::VETERAN_RANNI_SICHTY:
+            return "Veteran ranni sichty";
+        case PlayerRank::POSTRACH_SAMOOBSLUZNYCH_POKLADEN:
+            return "Postrach samoobsluznych pokladen";
+        case PlayerRank::LEGENDA_OD_POKLADNY:
+            return "Legenda od pokladny";
+        case PlayerRank::KRAL_AKCNIHO_LETAKU:
+            return "Kral akcniho letaku";
+        case PlayerRank::VRCHNI_KROTITEL_ZAKAZNIKU:
+            return "Vrchni krotitel zakazniku";
+        case PlayerRank::SUPERVIZOR_SMENY:
+            return "Supervizor smeny";
+        case PlayerRank::MANAZER_PROVOZU:
+            return "Manazer provozu";
+        case PlayerRank::REGIONALNI_LEGENDA:
+            return "Regionalni legenda";
+        case PlayerRank::BOZSTVO_TESCO_KASY:
+            return "Bozstvo Tesco kasy";
         default:
             return "Otrok korporatu";
     }
@@ -28,15 +59,26 @@ std::string Profile::GetRankName() const
 
 void Profile::UpdateRank()
 {
-    if (maxScore >= 10000){
-        rank = PlayerRank::EXPERT_NA_PECIVO;
-    }else if (maxScore >= 5000){
-        rank = PlayerRank::POKROCILY_POKLADNI;
-    }else if (maxScore >= 1000){
-        rank = PlayerRank::ZAUCENY_BRIGADNIK;
-    }else{
-        rank = PlayerRank::NOVACEK;
-    }
+    if (maxScore >= 3000) rank = PlayerRank::BOZSTVO_TESCO_KASY;
+    else if (maxScore >= 2800) rank = PlayerRank::REGIONALNI_LEGENDA;
+    else if (maxScore >= 2600) rank = PlayerRank::MANAZER_PROVOZU;
+    else if (maxScore >= 2400) rank = PlayerRank::SUPERVIZOR_SMENY;
+    else if (maxScore >= 2200) rank = PlayerRank::VRCHNI_KROTITEL_ZAKAZNIKU;
+    else if (maxScore >= 2000) rank = PlayerRank::KRAL_AKCNIHO_LETAKU;
+    else if (maxScore >= 1800) rank = PlayerRank::LEGENDA_OD_POKLADNY;
+    else if (maxScore >= 1600) rank = PlayerRank::POSTRACH_SAMOOBSLUZNYCH_POKLADEN;
+    else if (maxScore >= 1450) rank = PlayerRank::VETERAN_RANNI_SICHTY;
+    else if (maxScore >= 1300) rank = PlayerRank::SPECIALISTA_NA_FRONTY;
+    else if (maxScore >= 1150) rank = PlayerRank::OCHRANCE_PASU;
+    else if (maxScore >= 1000) rank = PlayerRank::MISTR_MARKOVANI;
+    else if (maxScore >= 850) rank = PlayerRank::LOVEC_SLEV;
+    else if (maxScore >= 700) rank = PlayerRank::HLIDAC_CLUBCARD;
+    else if (maxScore >= 550) rank = PlayerRank::EXPERT_NA_PECIVO;
+    else if (maxScore >= 400) rank = PlayerRank::RYCHLA_RUKA;
+    else if (maxScore >= 300) rank = PlayerRank::POKROCILY_POKLADNI;
+    else if (maxScore >= 200) rank = PlayerRank::JUNIOR_POKLADNI;
+    else if (maxScore >= 100) rank = PlayerRank::ZAUCENY_BRIGADNIK;
+    else rank = PlayerRank::NOVACEK;
 }
 
 void CreateProfile(const std::string& profileName, int pin)
@@ -113,32 +155,25 @@ bool LoadProfile(const std::string& profileName, int enteredPin){
     return false; 
 }
 
-void LoadProfilesList()
-{
+void LoadProfilesList(){
     allProfiles.clear();
     std::ifstream file("profiles/profiles_list.txt");
     std::string name;
-    if (file.is_open())
-    {
-        while (file >> name)
-        {
+    if (file.is_open()){
+        while (file >> name){
             allProfiles.push_back(name);
         }
         file.close();
     }
 }
 
-void DeleteProfile(const std::string& profileName)
-{
+void DeleteProfile(const std::string& profileName){
     allProfiles.erase(
-        std::remove_if(allProfiles.begin(), allProfiles.end(), 
-            [&profileName](const std::string& name) { return name == profileName; }), 
-        allProfiles.end()
+        std::remove_if(allProfiles.begin(), allProfiles.end(), [&profileName](const std::string& name) { return name == profileName; }),  allProfiles.end()
     );
     
     std::ofstream listFile("profiles/profiles_list.txt");
-    if (listFile.is_open())
-    {
+    if (listFile.is_open()){
         for (const auto& name : allProfiles) {
             listFile << name << "\n";
         }

@@ -1,49 +1,20 @@
 #include "Customer.h"
 #include "../managers/AssetManager.h"
 
-Customer::Customer(
-    std::string id,
-    std::string name,
-    int age,
-    bool hasClubcard,
-    bool isRegular,
-    CustomerArchetype archetype,
-    int maxPatience,
-    Texture2D texture
-)
-: id(id),
-    name(name),
-    texture(texture),
-    age(age),
-    hasClubcard(hasClubcard),
-    hasCheckedCard(false),
-    gaveClubcard(false),
-    cardResponse(""),
-    isRegular(isRegular),
-    archetype(archetype),
-    maxPatience(maxPatience),
-    patience((float)maxPatience),
-    mood(MOOD_NEUTRAL),
-    pos(Vector2{-100.0f, 200.0f}),
-    state(WALKING_IN),
-    speechText(""),
-    speechTimer(0.0f),
-    hasCart(GetRandomValue(1, 100) <= 33)
-{
+Customer::Customer( std::string id, std::string name, int age, bool hasClubcard, bool isRegular, CustomerArchetype archetype, int maxPatience, Texture2D texture)
+: id(id), name(name), texture(texture), age(age), hasClubcard(hasClubcard), hasCheckedCard(false), gaveClubcard(false), cardResponse(""), isRegular(isRegular), archetype(archetype),  maxPatience(maxPatience), patience((float)maxPatience), mood(MOOD_NEUTRAL), pos(Vector2{-100.0f, 200.0f}), state(WALKING_IN), speechText(""), speechTimer(0.0f), hasCart(GetRandomValue(1, 100) <= 33){
     if (hasClubcard && GetRandomValue(1, 100) > 70) {
         gaveClubcard = true;
     }
 }
 
-void Customer::Update()
-{
+void Customer::Update(){
     if (state == WALKING_IN) {
         pos.x += 3.0f;
         if (pos.x >= 350) {
             state = WAITING;
         }
-    }
-    else if (state == WALKING_OUT) {
+    }else if (state == WALKING_OUT) {
         pos.x += 4.0f;
         if (pos.x > 900) {
             state = GONE;
@@ -79,8 +50,7 @@ void Customer::UpdatePatience(float dt)
     }
 }
 
-void Customer::ChangePatience(int amount)
-{
+void Customer::ChangePatience(int amount){
     patience += amount;
 
     if (patience > maxPatience) {
@@ -92,13 +62,11 @@ void Customer::ChangePatience(int amount)
     }
 }
 
-bool Customer::IsOutOfPatience() const
-{
+bool Customer::IsOutOfPatience() const {
     return patience <= 0.0f;
 }
 
-const char* Customer::GetMoodText() const
-{
+const char* Customer::GetMoodText() const {
     switch (mood) {
         case MOOD_HAPPY: return ":)";
         case MOOD_NEUTRAL: return ":|";
@@ -108,8 +76,7 @@ const char* Customer::GetMoodText() const
     }
 }
 
-void Customer::DrawPatienceBar() const
-{
+void Customer::DrawPatienceBar() const {
     float ratio = patience / (float)maxPatience;
 
     if (ratio < 0.0f) ratio = 0.0f;
@@ -128,53 +95,36 @@ void Customer::DrawPatienceBar() const
 
     DrawRectangle(barX, barY, (int)(barW * ratio), barH, barColor);
     DrawRectangleLines(barX, barY, barW, barH, BLACK);
-
     DrawText(GetMoodText(), barX + 110, barY - 6, 20, BLACK);
 }
 
-void Customer::Draw() const
-{
+void Customer::Draw() const {
     if (texture.id > 0) {
-        DrawTexturePro(
-            texture,
-            Rectangle{ 0, 0, (float)texture.width, (float)texture.height },
-            Rectangle{ pos.x, pos.y - 0, 200, 390 },
-            Vector2{ 0, 0 },
-            0.0f,
-            WHITE
-        );
+        DrawTexturePro( texture, Rectangle{ 0, 0, (float)texture.width, (float)texture.height }, Rectangle{ pos.x, pos.y - 0, 200, 390 }, Vector2{ 0, 0 }, 0.0f, WHITE);
     } else {
         DrawRectangle((int)pos.x, (int)pos.y, 100, 350, DARKBLUE);
         DrawCircle((int)pos.x + 50, (int)pos.y - 30, 40, BEIGE);
     }
-
     DrawCart();
-
     DrawText(name.c_str(), (int)pos.x, (int)pos.y - 120, 14, BLACK);
     DrawText(TextFormat("Vek %d", age), (int)pos.x + 10, (int)pos.y - 30, 16, MAROON);
-
     DrawPatienceBar();
-
     DrawSpeechBubble();
 }
 
-static std::string PickRandomLine(const std::vector<std::string>& lines)
-{
+static std::string PickRandomLine(const std::vector<std::string>& lines){
     if (lines.empty()) {
         return "";
     }
-
     return lines[GetRandomValue(0, (int)lines.size() - 1)];
 }
 
-void Customer::SayArrivalLine()
-{
+void Customer::SayArrivalLine(){
     speechText = PickRandomLine(arrivalLines);
     speechTimer = 3.0f;
 }
 
-void Customer::SayExitLine()
-{
+void Customer::SayExitLine(){
     std::string line;
 
     if (mood == MOOD_HAPPY) {
@@ -198,8 +148,7 @@ void Customer::SayExitLine()
     speechTimer = 3.0f;
 }
 
-void Customer::UpdateSpeech(float dt)
-{
+void Customer::UpdateSpeech(float dt) {
     if (speechTimer > 0.0f) {
         speechTimer -= dt;
 
@@ -209,8 +158,7 @@ void Customer::UpdateSpeech(float dt)
     }
 }
 
-void Customer::DrawSpeechBubble() const
-{
+void Customer::DrawSpeechBubble() const {
     if (speechTimer <= 0.0f || speechText.empty()) {
         return;
     }
@@ -223,52 +171,24 @@ void Customer::DrawSpeechBubble() const
     DrawText(speechText.c_str(), x + 10, y + 15, 12, BLACK);
 }
 
-Rectangle Customer::GetCartRect() const
-{
+Rectangle Customer::GetCartRect() const {
     const float CART_W = 180.0f;
     const float CART_H = 125.0f;
 
-    return Rectangle{
-        pos.x + 95.0f,
-        pos.y + 210.0f,
-        CART_W,
-        CART_H
-    };
+    return Rectangle{pos.x + 95.0f, pos.y + 210.0f, CART_W, CART_H};
 }
 
-void Customer::DrawCart() const
-{
+void Customer::DrawCart() const {
     if (!hasCart) {
         return;
     }
-
     Rectangle cartRect = GetCartRect();
-
     if (AssetManager::cartTexture.id > 0) {
-        DrawTexturePro(
-            AssetManager::cartTexture,
-            Rectangle{
-                0.0f,
-                0.0f,
-                (float)AssetManager::cartTexture.width,
-                (float)AssetManager::cartTexture.height
-            },
-            cartRect,
-            Vector2{ 0.0f, 0.0f },
-            0.0f,
-            WHITE
-        );
+        DrawTexturePro( AssetManager::cartTexture, Rectangle{0.0f, 0.0f, (float)AssetManager::cartTexture.width, (float)AssetManager::cartTexture.height}, cartRect, Vector2{ 0.0f, 0.0f }, 0.0f, WHITE);
     } else {
-        DrawRectangleRec(cartRect, Fade(LIGHTGRAY, 0.85f));
-        DrawRectangleLines(
-            (int)cartRect.x,
-            (int)cartRect.y,
-            (int)cartRect.width,
-            (int)cartRect.height,
-            DARKGRAY
-        );
-
-        DrawCircle((int)cartRect.x + 35, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
-        DrawCircle((int)cartRect.x + 140, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
+    DrawRectangleRec(cartRect, Fade(LIGHTGRAY, 0.85f));
+    DrawRectangleLines((int)cartRect.x, (int)cartRect.y, (int)cartRect.width, (int)cartRect.height, DARKGRAY);
+    DrawCircle((int)cartRect.x + 35, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
+    DrawCircle((int)cartRect.x + 140, (int)cartRect.y + (int)cartRect.height, 10, BLACK);
     }
 }

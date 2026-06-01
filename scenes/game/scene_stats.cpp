@@ -23,14 +23,9 @@ void runStatsScene(GameState &currentState, InputManager &input) {
         newStreakRecord = false;
 
         if (!currentShift.wasFired) {
-            // den se započítá hned po úspěšné směně
             activeProfile.shiftsCompleted++;
-
-            // výdělek a lidi se započítají hned
             activeProfile.totalMoneyEarned += currentShift.moneyEarned;
             activeProfile.customersServed += currentShift.customersServed;
-
-            // série dnů bez vyhazovu
             activeProfile.currentDayStreak++;
 
             if (activeProfile.currentDayStreak > activeProfile.bestDayStreak) {
@@ -38,13 +33,12 @@ void runStatsScene(GameState &currentState, InputManager &input) {
                 newStreakRecord = true;
             }
 
-            // nejlepší výdělek za jednu směnu
             if (currentShift.moneyEarned > activeProfile.maxScore) {
                 activeProfile.maxScore = currentShift.moneyEarned;
                 newRecord = true;
             }
+
         } else {
-            // vyhazov = série končí
             activeProfile.currentDayStreak = 0;
         }
 
@@ -54,14 +48,12 @@ void runStatsScene(GameState &currentState, InputManager &input) {
         isProgressSaved = true;
     }
 
-    // Heading text based on results
     if (currentShift.wasFired) {
         DrawTextEx(AssetManager::mainFont, "DOSTAL JSI VYHAZOV", Vector2{ 170, 60 }, 20.0f, 1.0f, RED);
     } else {
         DrawTextEx(AssetManager::mainFont, "UCTENKA", Vector2{ 200, 60 }, 20.0f, 1.0f, BLACK);
     }
 
-    // Stats card
     int cardY = 150;
     DrawRectangle(200, cardY, 400, 260, LIGHTGRAY);
     DrawRectangleLines(200, cardY, 400, 260, DARKGRAY);
@@ -72,17 +64,9 @@ void runStatsScene(GameState &currentState, InputManager &input) {
     DrawTextEx(AssetManager::mainFont, TextFormat("Dnesni trzba kasy  %d Kc", currentShift.moneyEarned), Vector2{ 230, (float)cardY + 170 }, 16.0f, 1.0f, GOLD);
 
     if (newRecord) {
-        DrawTextEx(
-            AssetManager::mainFont,
-            "NOVY OSOBNI REKORD!",
-            Vector2{ 210, (float)cardY + 280 },
-            14.0f,
-            1.0f,
-            RED
-        );
+        DrawTextEx( AssetManager::mainFont,"NOVY OSOBNI REKORD!",Vector2{ 210, (float)cardY + 280 }, 14.0f, 1.0f, RED );
     }
 
-    // Action button
     Rectangle actionBtn = { 250, 450, 300, 45 };
     bool hoverAction = CheckCollisionPointRec(mousePos, actionBtn);
     DrawRectangleRec(actionBtn, hoverAction ? BLUE : DARKBLUE);
@@ -92,7 +76,6 @@ void runStatsScene(GameState &currentState, InputManager &input) {
 
     if (hoverAction && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         isProgressSaved = false; 
-        
         if (currentShift.wasFired) {
             currentState = STATE_MENU;       
         } else {

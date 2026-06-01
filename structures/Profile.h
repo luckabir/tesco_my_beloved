@@ -4,34 +4,43 @@
 #include <string>
 #include <vector>
 
-enum class PlayerRank
-{
+enum class PlayerRank{
     NOVACEK = 0,
     ZAUCENY_BRIGADNIK = 1,
-    POKROCILY_POKLADNI = 2,
-    EXPERT_NA_PECIVO = 3
+    JUNIOR_POKLADNI = 2,
+    POKROCILY_POKLADNI = 3,
+    RYCHLA_RUKA = 4,
+    EXPERT_NA_PECIVO = 5,
+    HLIDAC_CLUBCARD = 6,
+    LOVEC_SLEV = 7,
+    MISTR_MARKOVANI = 8,
+    OCHRANCE_PASU = 9,
+    SPECIALISTA_NA_FRONTY = 10,
+    VETERAN_RANNI_SICHTY = 11,
+    POSTRACH_SAMOOBSLUZNYCH_POKLADEN = 12,
+    LEGENDA_OD_POKLADNY = 13,
+    KRAL_AKCNIHO_LETAKU = 14,
+    VRCHNI_KROTITEL_ZAKAZNIKU = 15,
+    SUPERVIZOR_SMENY = 16,
+    MANAZER_PROVOZU = 17,
+    REGIONALNI_LEGENDA = 18,
+    BOZSTVO_TESCO_KASY = 19
 };
 
-struct Profile
-{
+struct Profile{
     std::string profilePicturePath = "ASSets/profile/default_avatar.png";
     std::string nickname = "";
     PlayerRank rank = PlayerRank::NOVACEK;
-
     int employeeId = 0;
     int pinCode = 0;
     int daysUntilPasswordChange = 30;
-
-    int maxScore = 0;              // nejvic vydelano za jednu smenu
+    int maxScore = 0;           
     int save_id = 0;
-
-    int shiftsCompleted = 0;       // uspesne dokoncene smeny
-    int customersServed = 0;       // celkem odbaveno lidi
-    int totalMoneyEarned = 0;      // celkem vydelano bez vyhazovu
-
-    int currentDayStreak = 0;      // aktualni serie smen bez vyhazovu
-    int bestDayStreak = 0;         // nejdelsi serie smen bez vyhazovu
-
+    int shiftsCompleted = 0;      
+    int customersServed = 0;     
+    int totalMoneyEarned = 0;     
+    int currentDayStreak = 0;      
+    int bestDayStreak = 0;       
     std::string GetRankName() const;
     void UpdateRank();
 };
