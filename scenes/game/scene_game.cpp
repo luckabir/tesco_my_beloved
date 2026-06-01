@@ -79,6 +79,12 @@ static void RebuildReceiptAndTotal(
 // ==========================================
 void runGameRecieved(GameState &currentState, InputManager &input, bool &isGamePaused, GameSubState &subState) {
     SetExitKey(KEY_NULL);
+    static Rectangle scannerDockRect = { 520.0f, 485.0f, 70.0f, 26.0f };
+    static Rectangle handheldScannerRect = { 520.0f, 485.0f, 70.0f, 26.0f };
+    static Vector2 scannerCableAnchor = { 515.0f, 500.0f };
+    static bool scannerHeldByLeft = false;
+    static bool scannerHeldByRight = false;
+    static bool scannerFalling = false;
     static bool initialized = false;
     static Hand leftHand, rightHand;
     static std::shared_ptr<Customer> currentCustomer = nullptr;
@@ -106,6 +112,9 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     static bool shiftClosing = false;
     static bool extraCustomerPending = false;
     static bool extraCustomerSpawned = false;
+    static bool clubcardScanned = false;
+    static float clubcardScanEffectTimer = 0.0f;
+    static Vector2 clubcardScanEffectPos = { 0.0f, 0.0f };
 
     if (resetGameSignal) {
         initialized = false;
@@ -118,6 +127,13 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
 
     if (!initialized) {
+        scannerDockRect = { 520.0f, 485.0f, 70.0f, 26.0f };
+        handheldScannerRect = scannerDockRect;
+        scannerCableAnchor = { 515.0f, 500.0f };
+        scannerHeldByLeft = false;
+        scannerHeldByRight = false;
+        scannerFalling = false;
+        clubcardScanned = false;
         leftHand = { Vector2{ 250, 300 }, false, -1, {255, 204, 153, 255}, true };
         rightHand = { Vector2{ 550, 300 }, false, -1, {255, 204, 153, 255}, false };
         shiftTimer = Day::TimeLimit(); 
@@ -150,6 +166,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         shiftClosing = false;
         extraCustomerPending = false;
         extraCustomerSpawned = false;
+        clubcardScanned = false;
         initialized = true;
     }
 
@@ -175,6 +192,13 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         if (mistakeDisplayTimer > 0) mistakeDisplayTimer -= GetFrameTime();
 
+        if (clubcardScanEffectTimer > 0.0f) {
+            clubcardScanEffectTimer -= GetFrameTime();
+
+            if (clubcardScanEffectTimer < 0.0f) {
+                clubcardScanEffectTimer = 0.0f;
+            }
+        }
 
 
         if (qteResultTimer > 0.0f) {
@@ -226,13 +250,38 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         leftHand.pos = Vector2Clamp(leftHand.pos, Vector2{0,0}, Vector2{800,600});
 
         if (IsKeyPressed(KEY_E)) {
-            if (!leftHand.isHolding) {
+            if (scannerHeldByLeft) {
+                scannerHeldByLeft = false;
+
+                if (CheckCollisionRecs(handheldScannerRect, scannerDockRect)) {
+                    handheldScannerRect = scannerDockRect;
+                    scannerFalling = false;
+                } else {
+                    scannerFalling = true;
+                }
+            }
+            else if (!leftHand.isHolding &&
+                    !scannerHeldByRight &&
+                    CheckCollisionPointRec(leftHand.pos, handheldScannerRect))
+            {
+                scannerHeldByLeft = true;
+                scannerFalling = false;
+            }
+            else if (!leftHand.isHolding) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    if (CheckCollisionPointRec(leftHand.pos, beltItems[i]->getRect()) && (int)i != rightHand.holdingItemIndex) {
-                        leftHand.isHolding = true; leftHand.holdingItemIndex = i; break;
+                    if (CheckCollisionPointRec(leftHand.pos, beltItems[i]->getRect()) &&
+                        (int)i != rightHand.holdingItemIndex)
+                    {
+                        leftHand.isHolding = true;
+                        leftHand.holdingItemIndex = i;
+                        break;
                     }
                 }
-            } else { leftHand.isHolding = false; leftHand.holdingItemIndex = -1; }
+            }
+            else {
+                leftHand.isHolding = false;
+                leftHand.holdingItemIndex = -1;
+            }
         }
 
         if (IsKeyDown(KEY_I)) rightHand.pos.y -= handSpeed;
@@ -242,31 +291,75 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         rightHand.pos = Vector2Clamp(rightHand.pos, Vector2{0,0}, Vector2{800,600});
 
         if (IsKeyPressed(KEY_O)) {
-            if (!rightHand.isHolding) {
+            if (scannerHeldByRight) {
+                scannerHeldByRight = false;
+
+                if (CheckCollisionRecs(handheldScannerRect, scannerDockRect)) {
+                    handheldScannerRect = scannerDockRect;
+                    scannerFalling = false;
+                } else {
+                    scannerFalling = true;
+                }
+            }
+            else if (!rightHand.isHolding &&
+                    !scannerHeldByLeft &&
+                    CheckCollisionPointRec(rightHand.pos, handheldScannerRect))
+            {
+                scannerHeldByRight = true;
+                scannerFalling = false;
+            }
+            else if (!rightHand.isHolding) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    if (CheckCollisionPointRec(rightHand.pos, beltItems[i]->getRect()) && (int)i != leftHand.holdingItemIndex) {
-                        rightHand.isHolding = true; rightHand.holdingItemIndex = i; break;
+                    if (CheckCollisionPointRec(rightHand.pos, beltItems[i]->getRect()) &&
+                        (int)i != leftHand.holdingItemIndex)
+                    {
+                        rightHand.isHolding = true;
+                        rightHand.holdingItemIndex = i;
+                        break;
                     }
                 }
-            } else { rightHand.isHolding = false; rightHand.holdingItemIndex = -1; }
+            }
+            else {
+                rightHand.isHolding = false;
+                rightHand.holdingItemIndex = -1;
+            }
         }
 
-    if (leftHand.isHolding) {
-        auto& item = beltItems[leftHand.holdingItemIndex];
-        item->pos = Vector2{
-            leftHand.pos.x - item->drawWidth * 0.5f,
-            leftHand.pos.y - item->drawHeight * 0.5f
-        };
-    }
+        if (leftHand.isHolding) {
+            auto& item = beltItems[leftHand.holdingItemIndex];
+            item->pos = Vector2{
+                leftHand.pos.x - item->drawWidth * 0.5f,
+                leftHand.pos.y - item->drawHeight * 0.5f
+            };
+        }
 
-    if (rightHand.isHolding) {
-        auto& item = beltItems[rightHand.holdingItemIndex];
-        item->pos = Vector2{
-            rightHand.pos.x - item->drawWidth * 0.5f,
-            rightHand.pos.y - item->drawHeight * 0.5f
-        };
-    }
+        if (rightHand.isHolding) {
+            auto& item = beltItems[rightHand.holdingItemIndex];
+            item->pos = Vector2{
+                rightHand.pos.x - item->drawWidth * 0.5f,
+                rightHand.pos.y - item->drawHeight * 0.5f
+            };
+        }
 
+        if (scannerHeldByLeft) {
+            handheldScannerRect.x = leftHand.pos.x - handheldScannerRect.width * 0.5f;
+            handheldScannerRect.y = leftHand.pos.y - handheldScannerRect.height * 0.5f;
+        }
+        else if (scannerHeldByRight) {
+            handheldScannerRect.x = rightHand.pos.x - handheldScannerRect.width * 0.5f;
+            handheldScannerRect.y = rightHand.pos.y - handheldScannerRect.height * 0.5f;
+        }
+        else if (scannerFalling) {
+            handheldScannerRect.y += 6.0f;
+
+            const float scannerRestY = 510.0f;
+
+            if (handheldScannerRect.y >= scannerRestY) {
+                handheldScannerRect.y = scannerRestY;
+                scannerFalling = false;
+            }
+        }
+        
 
         // GRAVITACE ITEMU
         for (size_t i = 0; i < beltItems.size(); i++) {
@@ -431,7 +524,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             pendingDiscountLines.clear();
             finalDiscountedTotal = totalSum;
 
-            if (currentCustomer->gaveClubcard) {
+            if (clubcardScanned) {
                 for (const auto& item : beltItems) {
                     int discount = item->basePrice - item->clubcardPrice;
 
@@ -444,10 +537,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     }
                 }
 
-                // Cena se odecte rovnou.
                 totalSum = finalDiscountedTotal;
 
-                // Ale radky se slevami se budou stale zobrazovat postupne.
                 showingDiscounts = !pendingDiscountLines.empty();
             }
 
@@ -455,7 +546,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         }
 
        // --- LOGIKA CLUB CARD ---
-      if (currentCustomer && currentCustomer->state == WAITING && !currentCustomer->hasCheckedCard)
+        if (currentCustomer &&
+            (currentCustomer->state == WAITING || currentCustomer->state == PAYING))
         {
             Rectangle askCardBtn = {
                 50.0f,
@@ -464,15 +556,83 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 30.0f
             };
 
-            if (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn)) {
+            // Zeptat se jde dokud ses jeste nezeptala,
+            // a to i kdyz uz sviti ZAPLATIT.
+            if (!currentCustomer->hasCheckedCard &&
+                (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn)))
+            {
                 currentCustomer->hasCheckedCard = true;
 
                 if (currentCustomer->hasClubcard) {
                     currentCustomer->gaveClubcard = true;
                     currentCustomer->cardResponse = "Ano, tady ji mam.";
-                    AssetManager::PlayCardSound();
                 } else {
                     currentCustomer->cardResponse = "Bohuzel ji nemam.";
+                }
+            }
+
+            Rectangle cardRect = { 0, 0, 0, 0 };
+            bool cardVisible = false;
+
+            if (currentCustomer->gaveClubcard &&
+                !clubcardScanned &&
+                AssetManager::clubcardTexture.id > 0)
+            {
+                cardRect = {
+                    currentCustomer->pos.x + 90.0f,
+                    currentCustomer->pos.y + 80.0f,
+                    45.0f,
+                    28.0f
+                };
+
+                cardVisible = true;
+            }
+
+            if (cardVisible && (scannerHeldByLeft || scannerHeldByRight))
+            {
+                Rectangle scanArea = handheldScannerRect;
+
+                scanArea.x -= 12.0f;
+                scanArea.y -= 12.0f;
+                scanArea.width += 24.0f;
+                scanArea.height += 24.0f;
+
+                if (CheckCollisionRecs(scanArea, cardRect)) {
+                    clubcardScanned = true;
+                    currentCustomer->cardResponse = "Clubcard nactena.";
+                    AssetManager::PlayCardSound();
+
+                    clubcardScanEffectTimer = 0.5f;
+                    clubcardScanEffectPos = {
+                        cardRect.x + cardRect.width * 0.5f,
+                        cardRect.y + cardRect.height * 0.5f
+                    };
+
+                    // Pokud uz sviti ZAPLATIT, dopocitej slevy hned po naskenovani.
+                    if (currentCustomer->state == PAYING) {
+                        pendingDiscountLines.clear();
+                        discountLines.clear();
+
+                        finalDiscountedTotal = totalSum;
+
+                        for (const auto& item : beltItems) {
+                            int discount = item->basePrice - item->clubcardPrice;
+
+                            if (discount > 0) {
+                                pendingDiscountLines.push_back(
+                                    item->name + "  -" + std::to_string(discount) + " Kc"
+                                );
+
+                                finalDiscountedTotal -= discount;
+                            }
+                        }
+
+                        totalSum = finalDiscountedTotal;
+
+                        discountTimer = 0.0f;
+                        discountIndex = 0;
+                        showingDiscounts = !pendingDiscountLines.empty();
+                    }
                 }
             }
         }
@@ -495,13 +655,13 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         // 3. LOGIKA PLATBY (Zaplacení rukou)
         if (currentCustomer->state == PAYING) {
-            Rectangle payBtn = { 325, 230, 150, 40 };
+            Rectangle payBtn = { 325, 390, 150, 40 };
 
             if (HandClick(leftHand, payBtn) || HandClick(rightHand, payBtn)) {
 
                 bool clubcardMistake = false;
 
-                if (currentCustomer->hasClubcard && !currentCustomer->hasCheckedCard) {
+                if (currentCustomer->hasClubcard && !clubcardScanned) {
                     currentShift.mistakesMade++;
                     clubcardMistake = true;
 
@@ -551,7 +711,9 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     extraCustomerSpawned = true;
 
                     SpawnCustomerAndItems(currentCustomer, beltItems);
-
+                    clubcardScanned = false;
+                    clubcardScanEffectTimer = 0.0f;
+                    clubcardScanEffectPos = { 0.0f, 0.0f };
                     clubcardPromptCenterY = 165.0f + (float)GetRandomValue(-20, 20);
                     ageRestrictionMistakeGiven = false;
                     qteRolledForThisCustomer = false;
@@ -559,7 +721,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     qteTimer = 0.0f;
                     qteResultText = "";
                     qteResultTimer = 0.0f;
-
                     mistakeMessage = "Zakaznik: Stiham to jeste, ze jo?";
                     mistakeDisplayTimer = 3.0f;
 
@@ -571,6 +732,9 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             }
 
             SpawnCustomerAndItems(currentCustomer, beltItems);
+            clubcardScanned = false;
+            clubcardScanEffectTimer = 0.0f;
+            clubcardScanEffectPos = { 0.0f, 0.0f };
             clubcardPromptCenterY = 165.0f + (float)GetRandomValue(-20, 20);
             ageRestrictionMistakeGiven = false;
             qteRolledForThisCustomer = false;
@@ -593,7 +757,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     DrawRectangle(300, 500, 200, 100, GRAY);          
     DrawRectangle(350, 540, 100, 20, RED); // Skener           
     DrawRectangle(500, 500, 300, 100, LIGHTGRAY);     
-
+    
     const int monitorX = 300;
     const int monitorY = 320;
     const int monitorW = 200;
@@ -613,35 +777,47 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
     DrawText(TextFormat("CELKEM %d Kc", totalSum),monitorX + 10,monitorY + 155,14,RED);
 
+    // držák scanneru vedle displeje, ve výšce začátku pásu
+    DrawRectangleRec(scannerDockRect, Fade(DARKGRAY, 0.5f));
+    DrawRectangleLines(
+        (int)scannerDockRect.x,
+        (int)scannerDockRect.y,
+        (int)scannerDockRect.width,
+        (int)scannerDockRect.height,
+        BLACK
+    );
 
+    // kabel
+    Vector2 scannerCenter = { handheldScannerRect.x + handheldScannerRect.width * 0.5f, handheldScannerRect.y + handheldScannerRect.height * 0.5f };
+
+    DrawLineEx(scannerCableAnchor, scannerCenter, 4.0f, DARKGRAY);
+    DrawCircleV(scannerCableAnchor, 5.0f, BLACK);
+
+    // samotný ruční scanner
+    DrawRectangleRounded(handheldScannerRect, 0.25f, 4, DARKGRAY);
+    DrawRectangleLines( (int)handheldScannerRect.x, (int)handheldScannerRect.y,  (int)handheldScannerRect.width, (int)handheldScannerRect.height, BLACK );
+
+    // malý detail "čtečky"
+    DrawRectangle( (int)handheldScannerRect.x + 8, (int)handheldScannerRect.y + 6, 22, 12, RED );
+
+    DrawText("SCANNER", (int)handheldScannerRect.x + 12, (int)handheldScannerRect.y + 14, 12, WHITE);
 
     // Tlačítko odebrání alkoholu
     if (currentCustomer && currentCustomer->age < 18 && currentCustomer->state == WAITING && HasRestrictedItem(beltItems)){
-            DrawRectangle(520, 250, 180, 40, RED);
-            DrawText("ODEBRAT ZBOZI", 540, 263, 14, WHITE);
-        }
+        DrawRectangle(520, 250, 180, 40, RED);
+        DrawText("ODEBRAT ZBOZI", 540, 263, 14, WHITE);
+    }
 
 
-        if (currentCustomer &&
-        currentCustomer->state == WAITING &&
-        !currentCustomer->hasCheckedCard)
-    {
-        Rectangle askCardBtn = {
-            50.0f,
-            clubcardPromptCenterY - 15.0f,
-            150.0f,
-            30.0f
-        };
-
-     
+    if (currentCustomer && (currentCustomer->state == WAITING || currentCustomer->state == PAYING) && !currentCustomer->hasCheckedCard){
+        Rectangle askCardBtn = { 50.0f, clubcardPromptCenterY - 15.0f, 150.0f, 30.0f };
         DrawRectangleRec(askCardBtn, ORANGE);
-
-
         DrawText("Dotaz na Clubcard", (int)askCardBtn.x + 5, (int)askCardBtn.y + 10, 12, BLACK);
     }
 
     if (currentCustomer &&
         currentCustomer->gaveClubcard &&
+        !clubcardScanned &&
         AssetManager::clubcardTexture.id > 0)
     {
         Rectangle cardDest = {
@@ -666,6 +842,23 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         );
     }
 
+    if (clubcardScanEffectTimer > 0.0f) {
+        float alpha = clubcardScanEffectTimer / 0.5f;
+
+        DrawCircleV(
+            clubcardScanEffectPos,
+            32.0f,
+            Fade(RED, 0.45f * alpha)
+        );
+
+        DrawCircleLines(
+            (int)clubcardScanEffectPos.x,
+            (int)clubcardScanEffectPos.y,
+            32.0f,
+            RED
+        );
+    }
+
     DrawText(TextFormat("CAS DNE %.1fs", shiftTimer), 20, 20, 20, shiftTimer < 30.0f ? RED : BLACK);
     DrawText(TextFormat("CHYBY %d / 3", currentShift.mistakesMade), 650, 20, 20, currentShift.mistakesMade > 1 ? RED : BLACK);
 
@@ -679,8 +872,8 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     }
 
    if (currentCustomer && currentCustomer->state == PAYING) {
-        DrawRectangleRec({ 325, 230, 150, 40 }, GREEN);
-        DrawText("ZAPLATIT", 335, 243, 12, WHITE);
+        DrawRectangleRec({ 325, 390, 150, 40 }, RED);
+        DrawText("ZAPLATIT", 336, 404, 12, WHITE);
     }
 
     if (currentCustomer &&
