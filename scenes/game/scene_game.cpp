@@ -34,7 +34,7 @@ void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<s
 static bool HasRestrictedItem(const std::vector<std::shared_ptr<Item>>& belt)
 {
     for (const auto& item : belt) {
-        if (item->category == RESTRICTED_18) {
+        if (item->category == RESTRICTED_18 & !item->isScanned && !item->deliveredToCustomer) {
             return true;
         }
     }
@@ -388,7 +388,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             Rectangle removeBtn = { 520, 250, 180, 40 };
             if (HandClick(leftHand, removeBtn) || HandClick(rightHand, removeBtn)){
                 for (int i = (int)beltItems.size() - 1; i >= 0; i--) {
-                    if (beltItems[i]->category == RESTRICTED_18) {
+                    if (beltItems[i]->category == RESTRICTED_18 && !beltItems[i]->isScanned) {
                         beltItems.erase(beltItems.begin() + i);
                     }
                 }
