@@ -24,6 +24,8 @@ Doporučené rozložení klávesnice: QWERTZ
 
 ## Spuštění
 
+budete potřebovat: libX11-devel, libXrandr-devel, libXinerama-devel, libXcursor-devel, libXi-devel
+
 1. spusťte si linux nebo wsl
 2. vytvořte si novou složku 
 3. v terminálu spusťte následující:
