@@ -323,7 +323,7 @@ static void AddNovakovaLines(std::shared_ptr<Customer> customer)
 std::shared_ptr<Customer> CustomerManager::CreateCustomer()
 {
     // 30 % sance na pravidelneho zakaznika
-    if (GetRandomValue(1, 100) <= 100) {
+    if (GetRandomValue(1, 100) <= 30) {
         return CreateRegularCustomer();
     }
 
