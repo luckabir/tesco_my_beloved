@@ -40,17 +40,21 @@ Doporučené rozložení klávesnice: QWERTZ
 ## Proslov
 
 Hra slouží jako simulátor práce za kasou. Inspiraci jsem čerpala hlavně z WhatsAppu, kde pořád dokola dostávám spam, kdy zase dorazím na brigádu. Klid nemám ani ve chvíli, kdy si jdu normálně nakoupit, takže doufám, že se výsledná práce bude líbit nejen kolegům ze školy, ale také kolegům z Tesca.
+
 Upřímně jsem už ani nedoufala, že se k tomuto projektu dostanu, takže ho beru jako základ pro hru, kterou bych později ráda rozvíjela dál s kamarádem. I přestože jeho láskou je Python, takže by se to celé muselo předělat. Ale možná je to tak dobře.
 
 ## Postup výroby
 
 Nejdřív mě napadla základní myšlenka hry, potom jsem si projekt rozdělila do více souborů, které jsem postupně upravovala podle svých představ. Jela jsem stylem SKJ: vypromptit, přečíst, rozhodnout. Pracovala jsem po menších částech.
+
 Na začátek jsem si rozmyslela, jak si danou část představuji, potom jsem si nechala navrhnout možné řešení. To jsem si prošla, upravila podle sebe a odstranila věci, které se mi nelíbily nebo do projektu neseděly.  Tuto část jsem pak vyzkoušela ve hře, zkompilovala, opravila chyby a podle výsledku ji ještě upravila.
 
 ## Popis hry
 
 Hra simuluje práci za pokladnou v obchodě. Hráč se nejdřív přihlásí do svého profilu pomocí PINu jako zaměstnanec na kase. Každý profil si ukládá vlastní postup, statistiky a výsledky.
+
 Po nástupu na směnu se hráč ocitne u pokladny, kam postupně chodí zákazníci se zbožím. Úkolem hráče je přesouvat položky po pásu, správně je naskenovat, odložit je zákazníkovi, sledovat celkovou cenu nákupu a nakonec nechat zákazníka zaplatit. Během směny ovšem nestačí jen markovat zboží. Někteří zákazníci mají Clubcard, takže se hráč musí ptát na kartu, případně ji naskenovat ručním scannerem a započítat slevy. Pokud ji zákazník nemá a hráč se ani neptal, nic se neděje. Co oko nevidí, to srdce nebolí. U alkoholu je potřeba hlídat věk zákazníka a případně odebrat zboží. Občas se objeví také QTE, kde hráč volí odpověď na zákazníkovu větu.
+
 Pokud hráč udělá tři chyby během dne, například nenaskenuje Clubcard nebo prodá alkohol nezletilému, tak dostane vyhazov. Směna tím končí neúspěchem a série úspěšných dnů se vynuluje. Když čas směny doběhne, hra ještě nechá dokončit aktuálního zákazníka a teprve potom se zobrazí výsledky. Abych respektovala realitu, je tam ještě 25% šance na to, že po časovém limitu přijde ještě jeden zákazník.
 Na konci směny se zobrazí statistiky. Profil si ukládá nejlepší výdělek za jednu směnu a nejdelší sérii úspěšných dnů bez vyhazovu. Tyto výsledky se pak zobrazují v žebříčku profilů, aby se profily mohly navzájem flexit.
 
