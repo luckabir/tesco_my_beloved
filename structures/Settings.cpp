@@ -1,12 +1,13 @@
 #include "Settings.h"
 #include "Profile.h"
 #include <fstream>
+#include <filesystem>
 
 Settings gameSettings;
 
-void SaveSettings()
-{
-    std::ofstream file("settings.txt");
+void SaveSettings() {
+    std::filesystem::create_directories("ASSets/data");
+    std::ofstream file("ASSets/data/settings.txt");
     if (file.is_open()){
         file << gameSettings.volume << std::endl;
         file << gameSettings.fullscreen << std::endl;
@@ -20,9 +21,8 @@ void SaveSettings()
     }
 }
 
-void LoadSettings()
-{
-    std::ifstream file("settings.txt");
+void LoadSettings() {
+    std::ifstream file("ASSets/data/settings.txt");
 
     if (file.is_open()){
         file >> gameSettings.volume;
@@ -36,7 +36,7 @@ void LoadSettings()
         file.close();
 
         if (gameSettings.lastLoggedInUser != "NONE" && !gameSettings.lastLoggedInUser.empty()) {
-            std::string filename = "profiles/profil_" + gameSettings.lastLoggedInUser + ".txt";
+            std::string filename = "ASSets/data/profiles/profil_" + gameSettings.lastLoggedInUser + ".txt";
             std::ifstream profFile(filename);
             if (profFile.is_open()) {
                 int rankAsInt;

@@ -8,9 +8,14 @@
 Profile activeProfile;
 bool isUserLoggedIn = false;
 std::vector<std::string> allProfiles;
+static const std::string PROFILE_DIR = "ASSets/data/profiles";
+static const std::string PROFILE_LIST_PATH = "ASSets/data/profiles/profiles_list.txt";
 
-std::string Profile::GetRankName() const
-{
+static std::string GetProfileFilePath(const std::string& profileName){
+    return PROFILE_DIR + "/profil_" + profileName + ".txt";
+}
+
+std::string Profile::GetRankName() const {
     switch (rank) {
         case PlayerRank::NOVACEK:
             return "Uplny novacek";
@@ -57,33 +62,31 @@ std::string Profile::GetRankName() const
     }
 }
 
-void Profile::UpdateRank()
-{
-    if (maxScore >= 3000) rank = PlayerRank::BOZSTVO_TESCO_KASY;
-    else if (maxScore >= 2800) rank = PlayerRank::REGIONALNI_LEGENDA;
-    else if (maxScore >= 2600) rank = PlayerRank::MANAZER_PROVOZU;
-    else if (maxScore >= 2400) rank = PlayerRank::SUPERVIZOR_SMENY;
-    else if (maxScore >= 2200) rank = PlayerRank::VRCHNI_KROTITEL_ZAKAZNIKU;
-    else if (maxScore >= 2000) rank = PlayerRank::KRAL_AKCNIHO_LETAKU;
-    else if (maxScore >= 1800) rank = PlayerRank::LEGENDA_OD_POKLADNY;
-    else if (maxScore >= 1600) rank = PlayerRank::POSTRACH_SAMOOBSLUZNYCH_POKLADEN;
-    else if (maxScore >= 1450) rank = PlayerRank::VETERAN_RANNI_SICHTY;
-    else if (maxScore >= 1300) rank = PlayerRank::SPECIALISTA_NA_FRONTY;
-    else if (maxScore >= 1150) rank = PlayerRank::OCHRANCE_PASU;
-    else if (maxScore >= 1000) rank = PlayerRank::MISTR_MARKOVANI;
-    else if (maxScore >= 850) rank = PlayerRank::LOVEC_SLEV;
-    else if (maxScore >= 700) rank = PlayerRank::HLIDAC_CLUBCARD;
-    else if (maxScore >= 550) rank = PlayerRank::EXPERT_NA_PECIVO;
-    else if (maxScore >= 400) rank = PlayerRank::RYCHLA_RUKA;
-    else if (maxScore >= 300) rank = PlayerRank::POKROCILY_POKLADNI;
-    else if (maxScore >= 200) rank = PlayerRank::JUNIOR_POKLADNI;
-    else if (maxScore >= 100) rank = PlayerRank::ZAUCENY_BRIGADNIK;
+void Profile::UpdateRank() {
+    if (maxScore >= 200000) rank = PlayerRank::BOZSTVO_TESCO_KASY;
+    else if (maxScore >= 150000) rank = PlayerRank::REGIONALNI_LEGENDA;
+    else if (maxScore >= 100000) rank = PlayerRank::MANAZER_PROVOZU;
+    else if (maxScore >= 90000) rank = PlayerRank::SUPERVIZOR_SMENY;
+    else if (maxScore >= 80000) rank = PlayerRank::VRCHNI_KROTITEL_ZAKAZNIKU;
+    else if (maxScore >= 70000) rank = PlayerRank::KRAL_AKCNIHO_LETAKU;
+    else if (maxScore >= 65000) rank = PlayerRank::LEGENDA_OD_POKLADNY;
+    else if (maxScore >= 60000) rank = PlayerRank::POSTRACH_SAMOOBSLUZNYCH_POKLADEN;
+    else if (maxScore >= 55000) rank = PlayerRank::VETERAN_RANNI_SICHTY;
+    else if (maxScore >= 50000) rank = PlayerRank::SPECIALISTA_NA_FRONTY;
+    else if (maxScore >= 45000) rank = PlayerRank::OCHRANCE_PASU;
+    else if (maxScore >= 40000) rank = PlayerRank::MISTR_MARKOVANI;
+    else if (maxScore >= 35000) rank = PlayerRank::LOVEC_SLEV;
+    else if (maxScore >= 30000) rank = PlayerRank::HLIDAC_CLUBCARD;
+    else if (maxScore >= 25000) rank = PlayerRank::EXPERT_NA_PECIVO;
+    else if (maxScore >= 20000) rank = PlayerRank::RYCHLA_RUKA;
+    else if (maxScore >= 15000) rank = PlayerRank::POKROCILY_POKLADNI;
+    else if (maxScore >= 10000) rank = PlayerRank::JUNIOR_POKLADNI;
+    else if (maxScore >= 5000) rank = PlayerRank::ZAUCENY_BRIGADNIK;
     else rank = PlayerRank::NOVACEK;
 }
 
-void CreateProfile(const std::string& profileName, int pin)
-{
-    std::filesystem::create_directories("profiles");
+void CreateProfile(const std::string& profileName, int pin) {
+    std::filesystem::create_directories(PROFILE_DIR);
     activeProfile.nickname = profileName;
     activeProfile.pinCode = pin;
     activeProfile.employeeId = 1000 + (rand() % 9000); 
@@ -105,7 +108,7 @@ void CreateProfile(const std::string& profileName, int pin)
     if (std::find(allProfiles.begin(), allProfiles.end(), profileName) == allProfiles.end())
     {
         allProfiles.push_back(profileName);
-        std::ofstream listFile("profiles/profiles_list.txt");
+        std::ofstream listFile(PROFILE_LIST_PATH);
         for (const auto& name : allProfiles) {
             listFile << name << "\n";
         }
@@ -114,7 +117,7 @@ void CreateProfile(const std::string& profileName, int pin)
 
 
 bool LoadProfile(const std::string& profileName, int enteredPin){
-    std::string filename = "profiles/profil_" + profileName + ".txt";
+    std::string filename = GetProfileFilePath(profileName);
     std::ifstream file(filename);
 
     if (file.is_open()){
@@ -157,7 +160,7 @@ bool LoadProfile(const std::string& profileName, int enteredPin){
 
 void LoadProfilesList(){
     allProfiles.clear();
-    std::ifstream file("profiles/profiles_list.txt");
+    std::ifstream file(PROFILE_LIST_PATH);
     std::string name;
     if (file.is_open()){
         while (file >> name){
@@ -172,7 +175,7 @@ void DeleteProfile(const std::string& profileName){
         std::remove_if(allProfiles.begin(), allProfiles.end(), [&profileName](const std::string& name) { return name == profileName; }),  allProfiles.end()
     );
     
-    std::ofstream listFile("profiles/profiles_list.txt");
+    std::ofstream listFile(PROFILE_LIST_PATH);
     if (listFile.is_open()){
         for (const auto& name : allProfiles) {
             listFile << name << "\n";
@@ -180,7 +183,7 @@ void DeleteProfile(const std::string& profileName){
         listFile.close();
     }
 
-    std::string filename = "profiles/profil_" + profileName + ".txt";
+    std::string filename = GetProfileFilePath(profileName);;
     ::remove(filename.c_str()); 
     if (activeProfile.nickname == profileName) {
         LogoutProfile();
@@ -190,7 +193,8 @@ void DeleteProfile(const std::string& profileName){
 void SaveProfile(){
     if (!isUserLoggedIn) return;
 
-    std::string filename = "profiles/profil_" + activeProfile.nickname + ".txt";
+    std::filesystem::create_directories(PROFILE_DIR);
+    std::string filename = GetProfileFilePath(activeProfile.nickname);
     std::ofstream file(filename);
 
     if (file.is_open()){

@@ -19,7 +19,7 @@
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
     customerPtr = CustomerManager::CreateCustomer();
     customerPtr->SayArrivalLine();
-    int itemCount = GetRandomValue(2, 4);
+    int itemCount = GetRandomValue(1, 20);
     Color fallbackColors[] = { BROWN, WHITE, SKYBLUE, PINK, YELLOW, LIME, RED, PURPLE };
     for (int i = 0; i < itemCount; i++) {
         ItemTemplate recept = CustomerManager::PickItemForCustomer(*customerPtr);        
@@ -239,18 +239,16 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     scannerFalling = true;
                 }
             }
-            else if (!leftHand.isHolding &&
-                    !scannerHeldByRight &&
-                    CheckCollisionPointRec(leftHand.pos, handheldScannerRect))
-            {
+            else if (!leftHand.isHolding && !scannerHeldByRight && CheckCollisionPointRec(leftHand.pos, handheldScannerRect)) {
                 scannerHeldByLeft = true;
                 scannerFalling = false;
             }
             else if (!leftHand.isHolding) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    if (CheckCollisionPointRec(leftHand.pos, beltItems[i]->getRect()) &&
-                        (int)i != rightHand.holdingItemIndex)
-                    {
+                    if (beltItems[i]->deliveredToCustomer) {
+                        continue;
+                    }
+                    if (CheckCollisionPointRec(leftHand.pos, beltItems[i]->getRect()) && (int)i != rightHand.holdingItemIndex){
                         leftHand.isHolding = true;
                         leftHand.holdingItemIndex = i;
                         break;
@@ -272,7 +270,6 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         if (IsKeyPressed(KEY_O)) {
             if (scannerHeldByRight) {
                 scannerHeldByRight = false;
-
                 if (CheckCollisionRecs(handheldScannerRect, scannerDockRect)) {
                     handheldScannerRect = scannerDockRect;
                     scannerFalling = false;
@@ -280,18 +277,16 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     scannerFalling = true;
                 }
             }
-            else if (!rightHand.isHolding &&
-                    !scannerHeldByLeft &&
-                    CheckCollisionPointRec(rightHand.pos, handheldScannerRect))
-            {
+            else if (!rightHand.isHolding && !scannerHeldByLeft && CheckCollisionPointRec(rightHand.pos, handheldScannerRect)){
                 scannerHeldByRight = true;
                 scannerFalling = false;
             }
             else if (!rightHand.isHolding) {
                 for (size_t i = 0; i < beltItems.size(); i++) {
-                    if (CheckCollisionPointRec(rightHand.pos, beltItems[i]->getRect()) &&
-                        (int)i != leftHand.holdingItemIndex)
-                    {
+                    if (beltItems[i]->deliveredToCustomer) {
+                        continue;
+                    }
+                    if (CheckCollisionPointRec(rightHand.pos, beltItems[i]->getRect()) && (int)i != leftHand.holdingItemIndex){
                         rightHand.isHolding = true;
                         rightHand.holdingItemIndex = i;
                         break;
@@ -337,23 +332,26 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
             }
         }
         
+        Rectangle customerAreaRect = { 500.0f, 500.0f, 300.0f, 100.0f };
 
-        // GRAVITACE ITEMU
         for (size_t i = 0; i < beltItems.size(); i++) {
+            auto& item = beltItems[i];
+            if (item->deliveredToCustomer) {
+                continue;
+            }
             bool held = ((int)i == leftHand.holdingItemIndex && leftHand.isHolding) || ((int)i == rightHand.holdingItemIndex && rightHand.isHolding);
-            if (!held) {
-                auto& item = beltItems[i];
-                bool onSurface =
-                    item->pos.y >= 510;
-                if (!onSurface) {
-                    item->pos.y += 6.0f;
-                    if (item->pos.y > 510)
-                        item->pos.y = 510;
+            bool inCustomerArea = CheckCollisionRecs(item->getRect(), customerAreaRect);
+            if (!held && item->isScanned && inCustomerArea) {
+                item->customerAreaTimer += GetFrameTime();
+                if (item->customerAreaTimer >= 1.0f) {
+                    item->deliveredToCustomer = true;
+                    item->pos = { 900.0f, 900.0f };
                 }
+            } else {
+                item->customerAreaTimer = 0.0f;
             }
         }
 
-        // --- LOGIKA ZÁKAZNÍKA A PÁSU ---
         if (currentCustomer) {
             currentCustomer->Update();
             currentCustomer->UpdatePatience(GetFrameTime());           
@@ -444,7 +442,9 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         bool allDone = true;
         for (const auto& item : beltItems) {
-            if (!item->isScanned || item->pos.x < 500) allDone = false;
+            if (!item->isScanned || !item->deliveredToCustomer) {
+                allDone = false;
+            }
         }
             
         if (allDone && beltItems.size() > 0 && !leftHand.isHolding && !rightHand.isHolding && currentCustomer->state == WAITING) {
@@ -471,7 +471,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         if (currentCustomer && (currentCustomer->state == WAITING || currentCustomer->state == PAYING)){
             Rectangle askCardBtn = {50.0f, clubcardPromptCenterY - 15.0f, 150.0f,30.0f};
-            if (!currentCustomer->hasCheckedCard && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))){
+            if (!currentCustomer->gaveClubcard && !currentCustomer->hasCheckedCard && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))){
                 currentCustomer->hasCheckedCard = true;
                 if (currentCustomer->hasClubcard) {
                     currentCustomer->gaveClubcard = true;
@@ -625,17 +625,37 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
     DrawRectangle(monitorX, monitorY, monitorW, monitorH, BLACK);
     DrawRectangleLines(monitorX, monitorY, monitorW, monitorH, GREEN);
-    DrawText("TESCO T-2000", monitorX + 10, monitorY + 5, 10, GREEN);
+    DrawText("TESCO T-2000", monitorX + 10, monitorY + 5, 10, RED);
 
-    for (size_t i = 0; i < receiptHistory.size(); i++) {
-        DrawText(receiptHistory[i].c_str(),monitorX + 10,monitorY + 25 + (int)i * 15,12,GREEN);
+    struct MonitorLine {std::string text;Color color; };
+    std::vector<MonitorLine> monitorLines;
+
+    for (const auto& line : receiptHistory) {
+        monitorLines.push_back({ line, GREEN });
     }
 
-    for (size_t i = 0; i < discountLines.size(); i++) {
-        DrawText(discountLines[i].c_str(),monitorX + 10,monitorY + 95 + (int)i * 15,12,YELLOW);
+    for (const auto& line : discountLines) {
+        monitorLines.push_back({ line, YELLOW });
     }
 
-    DrawText(TextFormat("CELKEM %d Kc", totalSum),monitorX + 10,monitorY + 155,14,RED);
+    const int maxVisibleLines = 7;
+    const int lineHeight = 14;
+    const int bottomTextY = monitorY + 120;
+    int visibleCount = (int)monitorLines.size();
+
+    if (visibleCount > maxVisibleLines) {
+        visibleCount = maxVisibleLines;
+    }
+
+    int firstIndex = (int)monitorLines.size() - visibleCount;
+    int startY = bottomTextY - (visibleCount - 1) * lineHeight - 10;
+
+    for (int i = 0; i < visibleCount; i++) {
+        const MonitorLine& line = monitorLines[firstIndex + i];
+        DrawText( line.text.c_str(), monitorX + 10, startY + i * lineHeight, 12, line.color);
+    }
+
+    DrawText(TextFormat("CELKEM %d Kc", totalSum), monitorX + 10,  monitorY + 155, 14, RED);
 
     DrawRectangleRec(scannerDockRect, Fade(DARKGRAY, 0.5f));
     DrawRectangleLines((int)scannerDockRect.x,(int)scannerDockRect.y,(int)scannerDockRect.width,(int)scannerDockRect.height,BLACK);
@@ -652,7 +672,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         DrawText("ODEBRAT ZBOZI", 540, 263, 14, WHITE);
     }
 
-    if (currentCustomer && (currentCustomer->state == WAITING || currentCustomer->state == PAYING) && !currentCustomer->hasCheckedCard){
+    if (currentCustomer && (currentCustomer->state == WAITING || currentCustomer->state == PAYING) && !currentCustomer->hasCheckedCard && !clubcardScanned){
         Rectangle askCardBtn = { 50.0f, clubcardPromptCenterY - 15.0f, 150.0f, 30.0f };
         DrawRectangleRec(askCardBtn, ORANGE);
         DrawText("Dotaz na Clubcard", (int)askCardBtn.x + 5, (int)askCardBtn.y + 10, 12, BLACK);
@@ -678,7 +698,9 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
     }
 
     for (const auto& item : beltItems) {
-        item->Draw();
+        if (!item->deliveredToCustomer) {
+            item->Draw();
+        }       
     }
 
     if (currentCustomer && currentCustomer->state == PAYING) {

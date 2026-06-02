@@ -15,6 +15,8 @@ public:
     Vector2 pos;
     bool isScanned;
     bool missedPenaltyGiven;
+    bool deliveredToCustomer;
+    float customerAreaTimer;
     ItemCategory category;
     float drawWidth;
     float drawHeight;

@@ -126,7 +126,7 @@ void runProfile(GameState& currentState, InputManager& input, bool& isGamePaused
 
                 if (hoverProfile && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                     selectedProfileName = allProfiles[i];
-                    std::string filename = "profiles/profil_" + selectedProfileName + ".txt";
+                    std::string filename = "ASSets/data/profiles/profil_" + selectedProfileName + ".txt";
                     std::ifstream file(filename);
                     if (file.is_open()) {
                         int rankInt;

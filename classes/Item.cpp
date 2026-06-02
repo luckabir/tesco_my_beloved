@@ -1,7 +1,7 @@
 #include "Item.h"
 
 Item::Item(std::string n, int p, int cp, Texture2D tex, Color fallback, Vector2 startPos, ItemCategory cat)
- : name(n), basePrice(p), clubcardPrice(cp), texture(tex), fallbackColor(fallback), pos(startPos), isScanned(false),  missedPenaltyGiven(false), category(cat), drawWidth(90.0f), drawHeight(60.0f) { CalculateDrawSize(); }
+ : name(n), basePrice(p), clubcardPrice(cp), texture(tex), fallbackColor(fallback), pos(startPos), isScanned(false),  missedPenaltyGiven(false),  deliveredToCustomer(false), customerAreaTimer(0.0f), category(cat), drawWidth(90.0f), drawHeight(60.0f) { CalculateDrawSize(); }
 
 void Item::CalculateDrawSize() {
     const float maxW = 150.0f;

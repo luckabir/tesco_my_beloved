@@ -12,7 +12,7 @@
 
 static bool LoadScoreProfile(const std::string& profileName, ScoreRow& row)
 {
-    std::string filename = "profiles/profil_" + profileName + ".txt";
+    std::string filename = "ASSets/data/profiles/profil_" + profileName + ".txt";
     std::ifstream file(filename);
 
     if (!file.is_open()) {
