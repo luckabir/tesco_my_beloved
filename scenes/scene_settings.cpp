@@ -295,16 +295,16 @@ void runSettings(GameState& currentState, InputManager& input)
         DrawTextEx(AssetManager::mainFont, "V OKNE", Vector2{ screenModeButton.x + 95, screenModeButton.y + 14 }, 14.0f, 1.0f, BLACK);
     }
 
-    DrawTextEx(AssetManager::mainFont, "HLASITOST:", Vector2{ 250, 230 }, 16.0f, 1.0f, DARKGRAY);
+    DrawTextEx(AssetManager::mainFont, "HLASITOST", Vector2{ 250, 230 }, 16.0f, 1.0f, DARKGRAY);
     DrawRectangleRec(volumeSliderBar, LIGHTGRAY);
     DrawRectangle((int)volumeSliderBar.x, (int)volumeSliderBar.y, (int)(volumeSliderBar.width * tempVolume), (int)volumeSliderBar.height, RED);
     DrawRectangle((int)(volumeSliderBar.x + volumeSliderBar.width * tempVolume - 8), (int)volumeSliderBar.y - 5, 16, 25, DARKGRAY);
 
     char volText[16];
-    TextCopy(volText, TextFormat("%d %%", (int)(tempVolume * 100)));
+    TextCopy(volText, TextFormat("%d", (int)(tempVolume * 100)));
     DrawTextEx(AssetManager::mainFont, volText, Vector2{ volumeSliderBar.x + volumeSliderBar.width + 20, volumeSliderBar.y - 2 }, 16.0f, 1.0f, BLACK);
 
-    DrawTextEx(AssetManager::mainFont, "KVALITA GRAFIKY:", Vector2{ 250, 305 }, 16.0f, 1.0f, DARKGRAY);
+    DrawTextEx(AssetManager::mainFont, "KVALITA GRAFIKY", Vector2{ 250, 305 }, 16.0f, 1.0f, DARKGRAY);
 
     bool hoverClassic = CheckCollisionPointCircle(mousePos, radioClassicCenter, radioRadius);
     DrawCircleV(radioClassicCenter, radioRadius + 2, DARKGRAY);

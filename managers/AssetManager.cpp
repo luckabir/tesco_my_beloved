@@ -11,10 +11,12 @@ Texture2D AssetManager::clubcardTexture = { 0 };
 Sound AssetManager::scanSound = { 0 };
 Sound AssetManager::cardSound = { 0 };
 Texture2D AssetManager::cartTexture = { 0 };
+Texture2D AssetManager::gameBackgroundTexture = { 0 };
 Sound* AssetManager::currentMusic = nullptr;
 std::vector<ItemTemplate> AssetManager::itemDatabase;
 std::map<std::string, Texture2D> AssetManager::textures;
 std::map<std::string, Texture2D> AssetManager::customerTextures;
+std::map<std::string, Sound> AssetManager::customerArrivalSounds;
 
 void AssetManager::LoadAll(){
     mainFont = LoadFontEx("ASSets/fonts/Daydream.otf", 64, nullptr, 0);
@@ -25,6 +27,16 @@ void AssetManager::LoadAll(){
     scanSound = LoadSound("ASSets/sounds/scan.mp3");
     cardSound = LoadSound("ASSets/sounds/kartes.mp3");
     cartTexture = LoadTexture("ASSets/textures/kosik.png");
+    gameBackgroundTexture = LoadTexture("ASSets/textures/background.png");
+    customerArrivalSounds["shrek"] = LoadSound("ASSets/sounds/shrek.mp3");
+    customerArrivalSounds["barns"] = LoadSound("ASSets/sounds/barns.mp3");
+    customerArrivalSounds["doctor10"] = LoadSound("ASSets/sounds/doctor.mp3");
+    customerArrivalSounds["chloe_price"] = LoadSound("ASSets/sounds/chloe.mp3");
+    customerArrivalSounds["big_krtkus"] = LoadSound("ASSets/sounds/krtkus.mp3");
+    customerArrivalSounds["honza_tuna"] = LoadSound("ASSets/sounds/tuna.mp3");
+    customerArrivalSounds["honza_spacek"] = LoadSound("ASSets/sounds/spacek.mp3");
+    customerArrivalSounds["sugar_denny"] = LoadSound("ASSets/sounds/sugardenny.mp3");
+    customerArrivalSounds["alastor"] = LoadSound("ASSets/sounds/alastor.mp3");
 }
 
 void AssetManager::UnloadAll(){
@@ -55,6 +67,19 @@ void AssetManager::UnloadAll(){
         cartTexture = { 0 };
     }
 
+    if (gameBackgroundTexture.id > 0) {
+        UnloadTexture(gameBackgroundTexture);
+        gameBackgroundTexture = { 0 };
+    }
+
+
+    for (auto& [id, sound] : customerArrivalSounds) {
+        if (sound.frameCount > 0) {
+            UnloadSound(sound);
+        }
+    }
+
+    customerArrivalSounds.clear();
     customerTextures.clear();
 }
 
@@ -100,13 +125,11 @@ void AssetManager::StopAllMusic(){
     currentMusic = nullptr;
 }
 
-void AssetManager::PlayMenuMusic()
-{
+void AssetManager::PlayMenuMusic(){
     SetActiveMusic(MUSIC_MENU);
 }
 
-void AssetManager::PlayGameMusic()
-{
+void AssetManager::PlayGameMusic(){
     SetActiveMusic(MUSIC_GAME);
 }
 
@@ -181,8 +204,7 @@ void AssetManager::PreloadItemTextures(){
 }
 
 
-void AssetManager::PreloadCustomerTextures()
-{
+void AssetManager::PreloadCustomerTextures() {
     if (!customerTextures.empty()) {
         return;
     }
@@ -192,7 +214,6 @@ void AssetManager::PreloadCustomerTextures()
     customerTextures["talkative"] = LoadTexture("ASSets/textures/customers/talkative.png");
     customerTextures["angry"] = LoadTexture("ASSets/textures/customers/angry.png");
     customerTextures["confused"] = LoadTexture("ASSets/textures/customers/confused.png");
-
     customerTextures["shrek"] = LoadTexture("ASSets/textures/customers/shrek.png");
     customerTextures["barns_courtney"] = LoadTexture("ASSets/textures/customers/barns_courtney.png");
     customerTextures["doctor10"] = LoadTexture("ASSets/textures/customers/10th_doc.png");
@@ -204,8 +225,7 @@ void AssetManager::PreloadCustomerTextures()
     customerTextures["alastor"] = LoadTexture("ASSets/textures/customers/alastor.png");
 }
 
-Texture2D AssetManager::GetCustomerTexture(const std::string& id)
-{
+Texture2D AssetManager::GetCustomerTexture(const std::string& id){
     auto it = customerTextures.find(id);
     if (it != customerTextures.end()) {
         return it->second;
@@ -219,16 +239,36 @@ Texture2D AssetManager::GetCustomerTexture(const std::string& id)
     return Texture2D{ 0 };
 }
 
-void AssetManager::PlayScanSound()
-{
+void AssetManager::PlayScanSound(){
     if (scanSound.frameCount > 0) {
         PlaySound(scanSound);
     }
 }
 
-void AssetManager::PlayCardSound()
-{
+void AssetManager::PlayCardSound(){
     if (cardSound.frameCount > 0) {
         PlaySound(cardSound);
+    }
+}
+
+void AssetManager::PlayCustomerArrivalSound(const std::string& customerId){
+    auto it = customerArrivalSounds.find(customerId);
+    if (it == customerArrivalSounds.end()) {
+        return;
+    }
+
+    if (it->second.frameCount > 0) {
+        PlaySound(it->second);
+    }
+}
+
+void AssetManager::StopCustomerArrivalSound(const std::string& customerId)
+{
+    auto it = customerArrivalSounds.find(customerId);
+    if (it == customerArrivalSounds.end()) {
+        return;
+    }
+    if (it->second.frameCount > 0 && IsSoundPlaying(it->second)) {
+        StopSound(it->second);
     }
 }

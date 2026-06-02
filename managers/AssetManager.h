@@ -38,9 +38,11 @@ public:
     static Sound cardSound;
     static Texture2D clubcardTexture;
     static Texture2D cartTexture;
+    static Texture2D gameBackgroundTexture;
     static std::vector<ItemTemplate> itemDatabase; 
     static std::map<std::string, Texture2D> textures;
     static std::map<std::string, Texture2D> customerTextures;
+    static std::map<std::string, Sound> customerArrivalSounds;
     static void LoadAll();
     static void UnloadAll();
     static void UpdateAudio();
@@ -56,6 +58,8 @@ public:
     static Texture2D GetCustomerTexture(const std::string& id);
     static void PlayScanSound();
     static void PlayCardSound();
+    static void PlayCustomerArrivalSound(const std::string& customerId);
+    static void StopCustomerArrivalSound(const std::string& customerId);
 private:
     static Sound* currentMusic;
 };

@@ -158,17 +158,77 @@ void Customer::UpdateSpeech(float dt) {
     }
 }
 
-void Customer::DrawSpeechBubble() const {
+void Customer::DrawSpeechBubble() const
+{
     if (speechTimer <= 0.0f || speechText.empty()) {
         return;
     }
 
+    const int bubbleW = 240;
+    const int padding = 10;
+    const int fontSize = 12;
+    const int lineHeight = 16;
+    const int maxTextW = bubbleW - padding * 2;
+    std::vector<std::string> lines;
+    std::string currentLine = "";
+    std::string currentWord = "";
+
+    for (size_t i = 0; i <= speechText.size(); i++) {
+        char c = (i < speechText.size()) ? speechText[i] : ' ';
+
+        if (c == ' ' || c == '\n' || i == speechText.size()) {
+            if (!currentWord.empty()) {
+                std::string testLine;
+
+                if (currentLine.empty()) {
+                    testLine = currentWord;
+                } else {
+                    testLine = currentLine + " " + currentWord;
+                }
+
+                if (MeasureText(testLine.c_str(), fontSize) <= maxTextW) {
+                    currentLine = testLine;
+                } else {
+                    if (!currentLine.empty()) {
+                        lines.push_back(currentLine);
+                    }
+                    currentLine = currentWord;
+                }
+                currentWord = "";
+            }
+            if (c == '\n') {
+                lines.push_back(currentLine);
+                currentLine = "";
+            }
+        } else {
+            currentWord += c;
+        }
+    }
+
+    if (!currentLine.empty()) {
+        lines.push_back(currentLine);
+    }
+
+    if (lines.empty()) {
+        lines.push_back(speechText);
+    }
+
+    int bubbleH = padding * 2 + (int)lines.size() * lineHeight;
     int x = (int)pos.x - 20;
     int y = (int)pos.y - 150;
 
-    DrawRectangle(x, y, 220, 45, Fade(RAYWHITE, 0.95f));
-    DrawRectangleLines(x, y, 220, 45, DARKGRAY);
-    DrawText(speechText.c_str(), x + 10, y + 15, 12, BLACK);
+    DrawRectangle(x, y, bubbleW, bubbleH, Fade(RAYWHITE, 0.95f));
+    DrawRectangleLines(x, y, bubbleW, bubbleH, DARKGRAY);
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        DrawText(
+            lines[i].c_str(),
+            x + padding,
+            y + padding + (int)i * lineHeight,
+            fontSize,
+            BLACK
+        );
+    }
 }
 
 Rectangle Customer::GetCartRect() const {

@@ -141,7 +141,7 @@ int main() {
 
         if (currentState != STATE_INTRO && currentState != STATE_EXIT && currentState != STATE_PLAYING) {            extern bool videoPlaying; 
             if (!videoPlaying) {
-                std::string statusText = isUserLoggedIn ? "Pokladni: " + activeProfile.nickname : "Neprihlasen";
+                std::string statusText = isUserLoggedIn ? "Pokladni " + activeProfile.nickname : "Neprihlasen";
                 Color textColor = isUserLoggedIn ? GREEN : RED;
                 Vector2 textSize = MeasureTextEx(AssetManager::mainFont, statusText.c_str(), 14.0f, 1.0f);
                 float textX = (float)virtualWidth - textSize.x - 20.0f;

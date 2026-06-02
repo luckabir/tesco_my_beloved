@@ -19,6 +19,7 @@
 void SpawnCustomerAndItems(std::shared_ptr<Customer>& customerPtr, std::vector<std::shared_ptr<Item>>& belt) {
     customerPtr = CustomerManager::CreateCustomer();
     customerPtr->SayArrivalLine();
+    AssetManager::PlayCustomerArrivalSound(customerPtr->id);
     int itemCount = GetRandomValue(1, 20);
     Color fallbackColors[] = { BROWN, WHITE, SKYBLUE, PINK, YELLOW, LIME, RED, PURPLE };
     for (int i = 0; i < itemCount; i++) {
@@ -471,13 +472,13 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
         if (currentCustomer && (currentCustomer->state == WAITING || currentCustomer->state == PAYING)){
             Rectangle askCardBtn = {50.0f, clubcardPromptCenterY - 15.0f, 150.0f,30.0f};
-            if (!currentCustomer->gaveClubcard && !currentCustomer->hasCheckedCard && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))){
+            if (!currentCustomer->hasCheckedCard && !clubcardScanned && (HandClick(leftHand, askCardBtn) || HandClick(rightHand, askCardBtn))){
                 currentCustomer->hasCheckedCard = true;
                 if (currentCustomer->hasClubcard) {
                     currentCustomer->gaveClubcard = true;
-                    currentCustomer->cardResponse = "Ano, tady ji mam.";
+                    currentCustomer->cardResponse = "Ano tady ji mam";
                 } else {
-                    currentCustomer->cardResponse = "Bohuzel ji nemam.";
+                    currentCustomer->cardResponse = "Bohuzel ji nemam";
                 }
             }
             Rectangle cardRect = { 0, 0, 0, 0 };
@@ -495,7 +496,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 scanArea.height += 24.0f;
                 if (CheckCollisionRecs(scanArea, cardRect)) {
                     clubcardScanned = true;
-                    currentCustomer->cardResponse = "Clubcard nactena.";
+                    currentCustomer->cardResponse = "Clubcard nactena";
                     AssetManager::PlayCardSound();
                     clubcardScanEffectTimer = 0.5f;
                     clubcardScanEffectPos = {cardRect.x + cardRect.width * 0.5f,cardRect.y + cardRect.height * 0.5f};
@@ -551,6 +552,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                 currentShift.customersServed++;
                 currentCustomer->SayExitLine();
                 currentCustomer->state = WALKING_OUT;
+                AssetManager::StopCustomerArrivalSound(currentCustomer->id);
                 qteActive = false;
                 qteResultText = "";
                 qteResultTimer = 0.0f;
@@ -586,7 +588,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
                     qteTimer = 0.0f;
                     qteResultText = "";
                     qteResultTimer = 0.0f;
-                    mistakeMessage = "Zakaznik: Stiham to jeste, ze jo?";
+                    mistakeMessage = "Stiham to jeste, ze jo";
                     mistakeDisplayTimer = 3.0f;
                     return;
                 }
@@ -610,6 +612,11 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
 
     // --- VYKRESLOVÁNÍ ---
     ClearBackground(RAYWHITE); 
+
+    if (AssetManager::gameBackgroundTexture.id > 0) {
+        DrawTexturePro(AssetManager::gameBackgroundTexture, Rectangle{0.0f, 0.0f, (float)AssetManager::gameBackgroundTexture.width, (float)AssetManager::gameBackgroundTexture.height}, Rectangle{ 0.0f, 0.0f, 800.0f, 600.0f }, Vector2{ 0.0f, 0.0f },0.0f, WHITE);
+    }
+
     if (currentCustomer) currentCustomer->Draw();
 
     DrawRectangle(0, 500, 300, 100, DARKGRAY);        
@@ -708,7 +715,7 @@ void runGameRecieved(GameState &currentState, InputManager &input, bool &isGameP
         DrawText("ZAPLATIT", 336, 404, 12, WHITE);
     }
 
-    if (currentCustomer && !currentCustomer->cardResponse.empty() && !currentCustomer->gaveClubcard){
+    if (currentCustomer && !currentCustomer->cardResponse.empty()){
         DrawText(currentCustomer->cardResponse.c_str(), currentCustomer->pos.x, currentCustomer->pos.y - 60, 16, MAROON);
     }
 

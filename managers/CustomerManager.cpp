@@ -323,7 +323,7 @@ static void AddNovakovaLines(std::shared_ptr<Customer> customer)
 std::shared_ptr<Customer> CustomerManager::CreateCustomer()
 {
     // 30 % sance na pravidelneho zakaznika
-    if (GetRandomValue(1, 100) <= 30) {
+    if (GetRandomValue(1, 100) <= 100) {
         return CreateRegularCustomer();
     }
 
@@ -355,32 +355,32 @@ std::shared_ptr<Customer> CustomerManager::CreateRandomCustomer()
     CustomerArchetype archetype = ARCH_NORMAL;
     std::string id = "random";
     std::string name = "Zakaznik";
-    int patience = 25;
+    int patience = 60;
 
     if (archetypeRoll == 1) {
         archetype = ARCH_NORMAL;
         name = "Zakaznik";
-        patience = 25;
+        patience = 60;
     }
     else if (archetypeRoll == 2) {
         archetype = ARCH_RUSHING;
         name = "Spechajici zakaznik";
-        patience = 18;
+        patience = 30;
     }
     else if (archetypeRoll == 3) {
         archetype = ARCH_TALKATIVE;
         name = "Ukecany zakaznik";
-        patience = 34;
+        patience = 50;
     }
     else if (archetypeRoll == 4) {
         archetype = ARCH_ANGRY;
         name = "Nastvany zakaznik";
-        patience = 20;
+        patience = 40;
     }
     else {
         archetype = ARCH_CONFUSED;
         name = "Zmateny zakaznik";
-        patience = 30;
+        patience = 100;
     }
 
     auto customer = std::make_shared<Customer>(
@@ -424,10 +424,7 @@ ItemTemplate CustomerManager::PickItemForCustomer(const Customer& customer)
 {
 
     if (!customer.favoriteItemIds.empty() && GetRandomValue(1, 100) <= 60) {
-        std::string wantedId = customer.favoriteItemIds[
-            GetRandomValue(0, (int)customer.favoriteItemIds.size() - 1)
-        ];
-
+        std::string wantedId = customer.favoriteItemIds[ GetRandomValue(0, (int)customer.favoriteItemIds.size() - 1)];
         for (const ItemTemplate& item : AssetManager::itemDatabase) {
             if (item.id == wantedId) {
                 return item;
@@ -495,7 +492,7 @@ static std::shared_ptr<Customer> CreateShrekCustomer()
         false,
         true,
         ARCH_REGULAR,
-        40,
+        50,
         GetCustomerTexture("shrek", ARCH_REGULAR, true)
     );
 
@@ -579,7 +576,7 @@ static std::shared_ptr<Customer> CreateBarnsCustomer()
         false,
         true,
         ARCH_REGULAR,
-        26,
+        60,
         GetCustomerTexture("barns_courtney", ARCH_REGULAR, true)
     );
 
@@ -664,7 +661,7 @@ static std::shared_ptr<Customer> CreateDoctorCustomer()
         true,
         true,
         ARCH_REGULAR,
-        38,
+        60,
         GetCustomerTexture("doctor10", ARCH_REGULAR, true)
     );
 
@@ -748,7 +745,7 @@ static std::shared_ptr<Customer> CreateChloeCustomer()
         false,
         true,
         ARCH_REGULAR,
-        22,
+        30,
         GetCustomerTexture("chloe_price", ARCH_REGULAR, true)
     );
 
@@ -832,7 +829,7 @@ static std::shared_ptr<Customer> CreateBigKrtkusCustomer()
         false,
         true,
         ARCH_REGULAR,
-        45,
+        40,
         GetCustomerTexture("big_krtkus", ARCH_REGULAR, true)
     );
 
@@ -916,7 +913,7 @@ static std::shared_ptr<Customer> CreateHonzaTunaCustomer()
         true,
         true,
         ARCH_REGULAR,
-        32,
+        100,
         GetCustomerTexture("honza_tuna", ARCH_REGULAR, true)
     );
 
@@ -1001,7 +998,7 @@ static std::shared_ptr<Customer> CreateHonzaSpacekCustomer()
         true,
         true,
         ARCH_REGULAR,
-        35,
+        80,
         GetCustomerTexture("honza_spacek", ARCH_REGULAR, true)
     );
 
@@ -1085,7 +1082,7 @@ static std::shared_ptr<Customer> CreateSugarDennyCustomer()
         false,
         true,
         ARCH_REGULAR,
-        24,
+        40,
         GetCustomerTexture("sugar_denny", ARCH_REGULAR, true)
     );
 
@@ -1169,7 +1166,7 @@ static std::shared_ptr<Customer> CreateAlastorCustomer()
         false,
         true,
         ARCH_REGULAR,
-        42,
+        70,
         GetCustomerTexture("alastor", ARCH_REGULAR, true)
     );
 
